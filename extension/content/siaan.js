@@ -41,24 +41,47 @@ function readPreview() {
 
 let lastSent = undefined;
 let reviewId = null;
+let lastPreview = null; // la vista se cierra al confirmar: se guarda la última para ubicar al estudiante
+let observer = null;
+let interval = null;
+
+/** Tras actualizar o recargar la extensión, este script queda huérfano: dejar de trabajar sin errores. */
+function alive() {
+  if (chrome.runtime?.id) return true;
+  observer?.disconnect();
+  clearInterval(interval);
+  return false;
+}
+
+function send(message) {
+  if (!alive()) return;
+  try {
+    chrome.runtime.sendMessage(message).catch(() => {});
+  } catch {
+    alive();
+  }
+}
 
 function sendPreview() {
   const preview = readPreview();
+  if (preview) lastPreview = preview;
   const data = preview && { ...preview, idPreInscripcion: reviewId };
   const key = JSON.stringify(data);
   if (key === lastSent) return;
   lastSent = key;
-  chrome.runtime.sendMessage({ type: 'siaan:preview', data }).catch(() => {});
+  send({ type: 'siaan:preview', data });
 }
 
 let timer = null;
-new MutationObserver(() => {
+observer = new MutationObserver(() => {
   clearTimeout(timer);
   timer = setTimeout(sendPreview, 400);
-}).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+});
+observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true });
 
 // Angular asigna los valores por propiedad (no dispara mutaciones): revisar también cada pocos segundos.
-setInterval(sendPreview, 3000);
+interval = setInterval(sendPreview, 3000);
+sendPreview();
 
 window.addEventListener('message', (event) => {
   if (event.source !== window || event.origin !== location.origin) return;
@@ -69,7 +92,6 @@ window.addEventListener('message', (event) => {
     lastSent = undefined;
     setTimeout(sendPreview, 800);
   } else if (msg.type === 'confirmed') {
-    chrome.runtime.sendMessage({ type: 'siaan:confirmed', idPreInscripcion: msg.idPreInscripcion, preview: readPreview() })
-      .catch(() => {});
+    send({ type: 'siaan:confirmed', idPreInscripcion: msg.idPreInscripcion || reviewId || null, preview: readPreview() || lastPreview });
   }
 });

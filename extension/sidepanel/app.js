@@ -7,6 +7,7 @@ import { SheetsClient, chromeAuth } from '../lib/sheets.js';
 import { studentsByCI } from '../lib/siaan.js';
 import { carreraFromSIAAN, destinoForPeriodo, periodoCode } from '../lib/siaanMatch.js';
 import { checkForUpdate } from '../lib/updates.js';
+import { reportError } from '../lib/errors.js';
 
 const sheets = new SheetsClient(chromeAuth);
 const $ = (id) => document.getElementById(id);
@@ -94,7 +95,7 @@ async function loadAll(force = false) {
     });
   } catch (e) {
     state.config = null;
-    state.loadError = e.message;
+    state.loadError = reportError('Cargar configuración', e, 'No se pudo leer la configuración de la planilla.');
   }
   render();
   runCheck();
@@ -141,7 +142,11 @@ function applySession(s) {
 
 // ---------- acciones ----------
 
-async function searchCI(ci) {
+/**
+ * @param {{ idPreInscripcion?: string, periodo?: string }} prefer  si hay varias preinscripciones,
+ *   elegir sola la que coincide (botón "Ya confirmé" de la vista previa)
+ */
+async function searchCI(ci, prefer = {}) {
   ci = ci.trim();
   if (!ci || !state.config) return;
   state.searching = true;
@@ -150,10 +155,13 @@ async function searchCI(ci) {
   try {
     const found = await studentsByCI(ci, state.config.general);
     state.result = null;
-    if (found.length === 1) pickCandidate(found[0]);
+    const preferida = found.find((s) => prefer.idPreInscripcion && s.idPreInscripcion === prefer.idPreInscripcion)
+      || (prefer.periodo && found.filter((s) => periodoCode(s.periodo) === periodoCode(prefer.periodo)).length === 1
+        ? found.find((s) => periodoCode(s.periodo) === periodoCode(prefer.periodo)) : null);
+    if (found.length === 1 || preferida) pickCandidate(preferida || found[0]);
     else state.candidates = found;
   } catch (e) {
-    state.searchError = e.message;
+    state.searchError = reportError('Buscar por CI', e, 'No se pudo buscar el carnet en SIAAN.');
   }
   state.searching = false;
   render();
@@ -224,7 +232,7 @@ async function runCheck() {
     state.check = { status: 'done', duplicado, warnings, message: '' };
   } catch (e) {
     if (seq !== checkSeq) return;
-    state.check = { status: 'error', duplicado: false, warnings: [], message: e.message };
+    state.check = { status: 'error', duplicado: false, warnings: [], message: reportError('Revisar planilla', e, 'No se pudo revisar la planilla.') };
   }
   renderCheck(); renderFooter();
 }
@@ -244,7 +252,7 @@ async function submit() {
     await clearStudent();
     resetForm();
   } catch (e) {
-    state.result = { ok: false, error: e.message };
+    state.result = { ok: false, error: reportError('Registrar', e, 'No se pudo registrar al estudiante.') };
     runCheck();
   }
   state.busy = false;
@@ -311,7 +319,12 @@ function renderStudent() {
   } else {
     if (state.preview) {
       out.push(studentCard(state.preview, 'Vista previa · pendiente de confirmar', 'warn'));
-      out.push(note('info', 'Al presionar "Confirmar" en SIAAN, el estudiante quedará listo aquí para registrarlo.'));
+      out.push(note('info', 'Al presionar "Confirmar" en SIAAN, el estudiante quedará listo aquí para registrarlo. ',
+        'Si ya lo confirmó y no aparece: ',
+        h('button', {
+          class: 'link', type: 'button', disabled: state.searching || !state.config || !state.preview.ci,
+          onclick: () => searchCI(state.preview.ci, state.preview)
+        }, 'Ya confirmé · cargar')));
     }
     if (state.candidates.length) {
       out.push(note('info', `Este carnet tiene ${state.candidates.length} preinscripciones confirmadas. Elija cuál registrar:`));

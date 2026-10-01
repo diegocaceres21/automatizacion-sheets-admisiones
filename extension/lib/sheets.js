@@ -116,8 +116,18 @@ export class SheetsClient {
 /** Autenticación con la cuenta de Chrome del asesor (manifest.oauth2). */
 export const chromeAuth = {
   async getToken(interactive) {
-    const { token } = await chrome.identity.getAuthToken({ interactive });
-    if (!token) throw new SheetsError('No se pudo iniciar sesión con Google.', 401);
+    let result;
+    try {
+      result = await chrome.identity.getAuthToken({ interactive });
+    } catch (e) {
+      // Rechaza con valores variados (a veces sin mensaje) cuando el perfil de Chrome no tiene sesión iniciada.
+      console.error('[Admisiones UCB] getAuthToken:', e);
+      throw new SheetsError(
+        `No se pudo iniciar sesión con Google${e?.message ? ` (${e.message})` : ''}. ` +
+        'Verifique que el perfil de Chrome tenga iniciada la sesión con su cuenta @ucb.edu.bo.', 401);
+    }
+    const token = typeof result === 'string' ? result : result?.token; // Chrome antiguo devuelve el token directo
+    if (!token) throw new SheetsError('No se pudo iniciar sesión con Google. Verifique la cuenta del perfil de Chrome.', 401);
     return token;
   },
   async dropToken(token) {

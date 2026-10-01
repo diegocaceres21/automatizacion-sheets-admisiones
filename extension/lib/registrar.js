@@ -1,6 +1,7 @@
 // Orquesta un registro: verifica duplicado y encabezados, luego escribe la fila principal y las secundarias.
 
 import { planWrites } from './rowBuilder.js';
+import { reportError } from './errors.js';
 
 /** Revisión previa al registro (también se usa al elegir destino para avisar antes de llenar el formulario). */
 export async function precheck(sheets, spreadsheetId, config, destinoId, ci) {
@@ -41,7 +42,7 @@ export async function registrar(sheets, spreadsheetId, config, destinoId, studen
       });
       resultados.push({ tipo: w.tipo, ok: true });
     } catch (e) {
-      resultados.push({ tipo: w.tipo, ok: false, error: e.message });
+      resultados.push({ tipo: w.tipo, ok: false, error: reportError(`Escritura secundaria (${w.tipo})`, e) });
     }
   }
   return { fila, hoja: principal.hoja, secundarias: resultados };

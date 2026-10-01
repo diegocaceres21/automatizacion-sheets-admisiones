@@ -1,3 +1,4 @@
+import { errorText } from '../lib/errors.js';
 import { clearConfigCache, getSpreadsheetId, loadConfig } from '../lib/configStore.js';
 import { headerWarnings } from '../lib/registrar.js';
 import { SheetsClient, chromeAuth } from '../lib/sheets.js';
@@ -43,7 +44,7 @@ async function testConnection() {
         const warnings = await headerWarnings(sheets, spreadsheetId, config, d);
         items.push(warnings.length ? ['warn', `${d.hoja}:\n${warnings.join('\n')}`] : ['ok', `${d.hoja}: encabezados correctos.`]);
       } catch (e) {
-        items.push(['err', `${d.hoja}: ${e.message}`]);
+        items.push(['err', `${d.hoja}: ${errorText(e)}`]);
       }
     }
     const g = config.general;
@@ -51,10 +52,10 @@ async function testConnection() {
       await sheets.get(g.incentivosSpreadsheetId, `'${g.incentivosHoja}'!A1`);
       items.push(['ok', 'Planilla de incentivos accesible.']);
     } catch (e) {
-      items.push(['err', `Planilla de incentivos: ${e.message}`]);
+      items.push(['err', `Planilla de incentivos: ${errorText(e)}`]);
     }
   } catch (e) {
-    items.push(['err', e.message]);
+    items.push(['err', errorText(e)]);
   }
   report(items);
   button.disabled = false;

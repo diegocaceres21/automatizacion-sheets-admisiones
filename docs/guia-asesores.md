@@ -24,6 +24,7 @@ Extensión de Chrome para registrar estudiantes en las planillas de Admisiones d
 1. En SIAAN, abra **Revisar preinscripción** del estudiante. El panel muestra una *vista previa* del estudiante.
 2. Revise los datos en SIAAN y presione **Confirmar**.
 3. El panel carga al estudiante con la marca **Confirmado en SIAAN**. Si el panel estaba cerrado, el ícono muestra un **1** verde: haga clic en el ícono para abrirlo.
+   Si no aparece, presione **Ya confirmé · cargar** en la vista previa del panel.
 4. Elija el **destino**, por ejemplo NUEVOS CARRERAS o PRE UCB GENERAL GRUPO 1.
 5. Complete el formulario. Su nombre de asesor aparece seleccionado automáticamente. Los campos poco usados están en **Más campos**.
 6. Presione **Añadir a …**. Al terminar, el panel muestra la fila registrada y un enlace **Abrir en Sheets**.
@@ -45,6 +46,7 @@ Use esta opción si el estudiante ya fue confirmado antes. Debe tener SIAAN abie
 | "No tiene permiso de edición en la planilla" | Pida acceso de edición al administrador. |
 | "Los encabezados de la hoja no coinciden…" | Alguien cambió columnas de la planilla. Avise al administrador antes de registrar. |
 | "El registro principal se guardó, pero falló …" | El estudiante sí quedó registrado. Avise al administrador para completar la fila de incentivos o de promoción. |
+| Error con "Revise la consola de la extensión" | Haga clic derecho dentro del panel, luego **Inspeccionar** y la pestaña **Console**. Envíe una captura al administrador. |
 | Ícono con **!** rojo | Hubo un error al leer al estudiante recién confirmado. Abra el panel para ver el detalle y búsquelo por carnet. |
 
 ## Actualizar

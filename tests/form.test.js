@@ -84,3 +84,13 @@ test('comparación de versiones para el aviso de actualización', async () => {
   assert.equal(compareVersions('1.0', '1.0.0'), 0);
   assert.equal(compareVersions('0.1.0', '0.1.1'), -1);
 });
+
+test('errorText nunca muestra "null" ni vacío', async () => {
+  const { errorText } = await import('../extension/lib/errors.js');
+  assert.equal(errorText(new Error('Falla X')), 'Falla X');
+  assert.equal(errorText('texto'), 'texto');
+  assert.match(errorText(null), /error inesperado/);
+  assert.match(errorText(new Error('null')), /error inesperado/);
+  assert.match(errorText({ message: '' }), /error inesperado/);
+  assert.equal(errorText({ code: 7 }), '{"code":7}');
+});

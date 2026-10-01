@@ -1,6 +1,6 @@
 {
-  "version": "0.2.0",
-  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.2.0.zip",
-  "notas": "Destino según el periodo de SIAAN y carrera automática en NUEVOS CARRERAS",
+  "version": "0.2.1",
+  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.2.1.zip",
+  "notas": "Corrige: Confirmar en pestañas de SIAAN abiertas antes de instalar, y mensajes de error 'null'",
   "fecha": "2026-10-01"
 }
