@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- Carga el panel real (extension/sidepanel) con chrome.* y Sheets simulados. Solo para desarrollo. -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel (harness)</title>
+  <link rel="stylesheet" href="../../extension/sidepanel/styles.css">
+  <style>body { max-width: 400px; margin: 0 auto; border-inline: 1px solid var(--border); }</style>
+</head>
+<body>
+  <script type="module">
+    const tabs = await (await fetch('./config-fixture.json')).json();
+    const params = new URLSearchParams(location.search);
+    const scenario = params.get('s') || 'confirmado';
+    if (params.get('u')) tabs.CONFIG_GENERAL = tabs.CONFIG_GENERAL.map((r) => (r[0] === 'versionUrl' ? ['versionUrl', new URL('./version.json', location.href).href, r[2]] : r));
+
+    const student = { idPreInscripcion: 'x', nombre: 'MAMANI QUISPE ANA LUCIA', ci: '9876543', celular: '71234567', colegio: 'DESPERTAR', departamentoColegio: 'COCHABAMBA' };
+    const session = {
+      configCache: { spreadsheetId: 'TEST', at: Date.now(), tabs },
+      pendingStudent: scenario === 'confirmado' || scenario === 'duplicado' ? { student, source: 'confirmacion', at: Date.now() } : null,
+      siaanPreview: scenario === 'preview' ? { data: { ...student, ci: '1112223' } } : null
+    };
+    const sync = { spreadsheetId: 'TEST', remembered: { destinoId: params.get('d') || 'NUEVOS', asesor: 'DIEGO CACERES' } };
+    const area = (store) => ({
+      get: async (keys) => Object.fromEntries([].concat(keys).map((k) => [k, store[k]])),
+      set: async (o) => Object.assign(store, o),
+      remove: async (k) => { delete store[k]; },
+      onChanged: { addListener() {} }
+    });
+    window.chrome = {
+      storage: { session: area(session), sync: area(sync), onChanged: { addListener() {} } },
+      action: { setBadgeText() {} },
+      runtime: { openOptionsPage: () => alert('opciones'), getManifest: () => ({ version: '0.1.0' }) },
+      identity: { getAuthToken: async () => ({ token: 't' }), removeCachedAuthToken: async () => {}, getProfileUserInfo: async () => ({ email: 'romy.salvatierra@ucb.edu.bo' }) },
+      tabs: { query: async () => [] }
+    };
+
+    // Sheets falso en memoria: la hoja del destino ya tiene el CI si el escenario es "duplicado".
+    const sheetData = {};
+    const realFetch = window.fetch;
+    window.fetch = async (url, init = {}) => {
+      if (!String(url).startsWith('https://sheets.googleapis.com')) return realFetch(url, init);
+      await new Promise((r) => setTimeout(r, 400));
+      const u = new URL(url);
+      const ok = (body) => ({ ok: true, status: 200, json: async () => body });
+      if (init.method === 'PUT') {
+        const body = JSON.parse(init.body);
+        const [, hoja, row] = /^'(.+)'!A(\d+)/.exec(body.range);
+        (sheetData[hoja] ||= [])[row - 1] = body.values[0];
+        return ok({});
+      }
+      if (u.searchParams.get('fields')) return ok({ sheets: [{ properties: { sheetId: 123, title: 'NUEVOS CARRERAS' } }] });
+      const ranges = u.searchParams.getAll('ranges');
+      return ok({ valueRanges: ranges.map((r) => {
+        const [, hoja, col] = /^'(.+)'!([A-Z]+)/.exec(r);
+        if (scenario === 'duplicado' && col !== 'A' && /\d+:[A-Z]+$/.test(r)) return { values: [['9876543']] };
+        if (col === 'A' && /!A:A$/.test(r)) return { values: [['ENC'], ['ENC2'], ...(sheetData[hoja] || []).slice(2).filter(Boolean)] };
+        const m = /!A(\d+)$/.exec(r);
+        if (m) return { values: [[(sheetData[hoja] || [])[m[1] - 1]?.[0] ?? '']] };
+        return { values: [] };
+      }) });
+    };
+
+    // Inyecta el HTML del panel y luego su script.
+    const html = await (await realFetch('../../extension/sidepanel/index.html')).text();
+    document.body.innerHTML = new DOMParser().parseFromString(html, 'text/html').body.innerHTML.replace(/<script[\s\S]*?<\/script>/g, '');
+    await import('../../extension/sidepanel/app.js');
+  </script>
+</body>
+</html>

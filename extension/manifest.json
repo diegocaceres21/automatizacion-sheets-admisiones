@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Admisiones UCB",
+  "version": "0.1.0",
+  "description": "Registro de estudiantes en las planillas de Admisiones desde el panel lateral.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzfpxeLK8mb+nsAeptHhr42bUA3Mp/OgMsMEpJZRlEZ6yN82FYWKXx/bATaP5jnpEuacy7Pjmu0JJJpCAWWxA4yyegmZ8iv6zzlWY9JzwoF53w+YbdTgVwzpA3bxgwUGTfbnKBsBeumMebaGPK+3p4A96dW2jbPGD6w5pOitN6hnTGDe6m1FDDNNBzSl+XOixBlra0U8G888Koe0at3nZ15i5ma0x6UgenZgSk749HsYf2QvMKypVbg2bnNJJiIi6kQo5jAzQNiXECvON4kPvlc6igxaB3uvIdPPVHOXsoL/92YLeODuPK7GZVJOK065AtlqISeN+dXbqFn57TLdn6QIDAQAB",
+  "oauth2": {
+    "client_id": "446198282484-h0ip6o18fjr4n2lbf4a1bsdkco0nn0cr.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+  },
+  "options_ui": { "page": "options/options.html", "open_in_tab": true },
+  "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "action": {
+    "default_title": "Admisiones UCB",
+    "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png" }
+  },
+  "side_panel": { "default_path": "sidepanel/index.html" },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["https://academico.ucb.edu.bo/*"],
+      "js": ["content/siaan-hook.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://academico.ucb.edu.bo/*"],
+      "js": ["content/siaan.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["sidePanel", "identity", "identity.email", "storage", "scripting", "tabs"],
+  "host_permissions": [
+    "https://academico.ucb.edu.bo/*",
+    "https://backend.ucb.edu.bo/*",
+    "https://sheets.googleapis.com/*"
+  ]
+}

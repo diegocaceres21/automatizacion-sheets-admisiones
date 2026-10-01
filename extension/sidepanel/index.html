@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admisiones UCB</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Admisiones</h1>
+    <div class="top-actions">
+      <button id="reload" class="icon" title="Recargar configuración" aria-label="Recargar configuración">↻</button>
+      <button id="settings" class="icon" title="Opciones" aria-label="Opciones">⚙</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="global"></div>
+
+    <section aria-labelledby="h-student">
+      <h2 id="h-student"><span class="step">1</span>Estudiante</h2>
+      <div id="student"></div>
+    </section>
+
+    <section aria-labelledby="h-destino">
+      <h2 id="h-destino"><span class="step">2</span>Destino</h2>
+      <div id="destinos"></div>
+      <div id="check"></div>
+    </section>
+
+    <section aria-labelledby="h-form">
+      <h2 id="h-form"><span class="step">3</span>Datos de inscripción</h2>
+      <form id="form" autocomplete="off"></form>
+    </section>
+  </main>
+
+  <footer class="bottom">
+    <div id="result"></div>
+    <button id="submit" class="primary" type="button" disabled>Añadir</button>
+    <p id="reason" class="reason"></p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

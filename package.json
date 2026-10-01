@@ -1,0 +1,10 @@
+{
+  "name": "admisiones-ucb-extension",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\" && node tests/legacy-parity.cjs",
+    "package": "node scripts/package.js",
+    "icons": "node scripts/make-icons.js"
+  }
+}

@@ -1,0 +1,6 @@
+# Saved SIAAN pages contain personal data
+Academico.html
+*.pem
+client_secret_*.json
+keys/
+dist/

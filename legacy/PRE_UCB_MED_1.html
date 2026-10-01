@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+      margin: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    select,
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    input[type="button"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    input[type="button"]:hover {
+      background-color: #45a049;
+    }
+    #pageloader
+    {
+      background: rgba( 255, 255, 255, 0.8 );
+      display: none;
+      height: 100%;
+      position: fixed;
+      width: 100%;
+      z-index: 9999;
+    }
+
+    #pageloader img
+    {
+      left: 50%;
+      margin-left: -32px;
+      margin-top: -32px;
+      position: absolute;
+      top: 50%;
+    }
+  </style>
+  
+</head>
+<body>
+  <div id="pageloader">
+   <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="processing..." />
+  </div>
+  <style>
+  /* ============================================ */
+  /* INTERRUPTOR: para volver a mostrar TODOS los campos, */
+  /* borra o comenta la siguiente línea (o la regla completa) */
+  .campo-oculto { display: none; }
+  /* ============================================ */
+</style>
+  <form id="myForm">
+    <div class="campo-oculto">
+    <label for="fechaInscripcion">Fecha de Inscripción:</label>
+  <input type="date" id="fechaInscripcion">
+    </div>
+    <br>
+    
+    <label for="Asesor">Asesor:</label>
+    <select id="Asesor">
+      <option value="ERIKA CASTRO">ERIKA CASTRO</option>
+      <option value="ROMY SALVATIERRA">ROMY SALVATIERRA</option>
+      <option value="WANDA PEREDO">WANDA PEREDO</option>
+      <option value="DIEGO MORALES">DIEGO MORALES</option>
+      <option value="RONALD BUSTILLOS">RONALD BUSTILLOS</option>
+      <option value="NATALIA DORADO">NATALIA DORADO</option>
+      <option value="DIEGO CACERES">DIEGO CACERES</option>
+    </select>
+    <br>
+    
+    <label for="carrera">Carrera:</label>
+    <select id="carrera">
+      <option value="MEDICINA">MEDICINA</option>
+      <option value="ODONTOLOGIA">ODONTOLOGIA</option>
+    </select>
+    <br>
+    
+    <label for="anioPromocion">Año de promoción: </label>
+    <input type="number" id="anioPromocion" value = "2026">
+    
+    <br>
+    
+    
+    <label for="tipo">Tipo de Inscripción:</label>
+    <select id="tipo">
+      <option value="PRESENCIAL">PRESENCIAL</option>
+      <option value="VIRTUAL">VIRTUAL</option>
+    </select>
+   
+    <br>
+    <div class="campo-oculto">
+    <label for="pack">Pack de Bienvenida</label>
+    <select id="pack">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+      
+      <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="etapa">Etapa de Inscripción</label>
+    <select id="etapa">
+      <option value="TOMA DE MATERIAS INCOMPLETA">TOMA DE MATERIAS INCOMPLETA</option>
+      <option value="TOMA DE MATERIAS COMPLETADA">TOMA DE MATERIAS COMPLETADA</option>
+      
+    </select>
+    </div>
+    <br>
+    <label for="etapa">Plan de Pago</label>
+    <select id="plan">
+      <option value="PROMOCIÓN 50%">PROMOCIÓN 50%</option>
+      <option value="ESTÁNDAR">ESTÁNDAR</option>
+      <option value="PRONTO PAGO">PRONTO PAGO</option>
+      
+      <option value="PRONTO PAGO PLUS">PRONTO PAGO PLUS</option>
+      <option value="CATO HOLIDAY GRATIS">CATO HOLIDAY GRATIS</option>
+    </select>
+    <br>
+    <label for="metodoPago">Método de Pago</label>
+    <select id="metodoPago">
+      <option value="QR">QR</option>
+      <option value="EFECTIVO">EFECTIVO</option>
+    </select>
+    <br>
+    <div class="campo-oculto">
+    <label for="autorizacion">Firma de Autorización y Discapacidad</label>
+    <select id="autorizacion">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+      
+      <option value="ACTUALIZADO EN SIAAN">ACTUALIZADO EN SIAAN</option>
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="contrato">Firma de condiciones generales</label>
+    <select id="contrato">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+      
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="firma">Firma de toma de materias</label>
+    <select id="firma">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+      
+    </select>
+    </div>
+    <br>
+    <input type="button" value="Añadir" onclick="submitForm()">
+  </form>
+
+  <script>
+
+    var today = new Date();
+    var timezoneOffset = today.getTimezoneOffset();
+    today.setMinutes(today.getMinutes() - timezoneOffset);
+    
+    document.getElementById('fechaInscripcion').valueAsDate = today;
+    //document.getElementById('fechaInscripcion').valueAsDate = new Date();
+
+    // Function to get user input and send it to the server-side function
+    // 'YYYY-MM-DD' (input date) -> 'DD/MM/YYYY'. Reemplaza formatDate, que sumaba 1 al dia y fallaba a fin de mes.
+    function formatFechaInput(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+    function formatDate(date) {
+    var day = date.getDate() + 1;
+    var month = date.getMonth() + 1;
+    var year = date.getFullYear();
+
+    // Pad with zero if needed
+    day = day < 10 ? '0' + day : day;
+    month = month < 10 ? '0' + month : month;
+
+    return day + '/' + month + '/' + year;
+  }
+
+    function submitForm() {
+      document.getElementById('pageloader').style.display = 'block';
+
+      var asesor = document.getElementById('Asesor').value;
+      var tipo = document.getElementById('tipo').value;
+
+      google.script.run.withSuccessHandler(data => {
+        alert("Se ha añadido al estudiante correctamente")
+        document.getElementById('pageloader').style.display = 'none';
+        google.script.host.close();
+      }).getDataFromUIMedicinaPre({
+        fecha: formatFechaInput(document.getElementById('fechaInscripcion').value),
+        asesor: asesor,
+        carrera: document.getElementById('carrera').value,
+        tipoInscripcion: tipo,
+        anioPromocion: document.getElementById('anioPromocion').value,
+        pack: document.getElementById('pack').value,
+        etapa: document.getElementById('etapa').value,
+        plan: document.getElementById('plan').value,
+        metodoPago: document.getElementById('metodoPago').value,
+        autorizacion: document.getElementById('autorizacion').value,
+        contrato: document.getElementById('contrato').value,
+        firma: document.getElementById('firma').value
+      }, "PRE UCB MED 1");
+
+    // Close the dialog
+    //google.script.host.close();
+    }
+
+    
+  </script>
+</body>
+</html>

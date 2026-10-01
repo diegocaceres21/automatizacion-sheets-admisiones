@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Admisiones UCB · Opciones</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>Admisiones UCB</h1>
+
+    <form id="form">
+      <label for="spreadsheetId">ID de la planilla de Admisiones</label>
+      <input id="spreadsheetId" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Ej. 1mmliqZtRkV09-hzNFYE4F0UdoWxfkwqiQoIvI0jOr2s">
+      <p class="hint">También puede pegar el enlace completo de la planilla.</p>
+      <div class="actions">
+        <button type="submit">Guardar</button>
+        <button type="button" id="test" class="secondary">Probar conexión</button>
+      </div>
+    </form>
+
+    <section id="result" hidden>
+      <h2>Resultado</h2>
+      <ul id="checks"></ul>
+    </section>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+      margin: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    select,
+    textarea,
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    input[type="button"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #divUniversidad{
+      display:none;
+    }
+    input[type="button"]:hover {
+      background-color: #45a049;
+    }
+    #pageloader
+    {
+      background: rgba( 255, 255, 255, 0.8 );
+      display: none;
+      height: 100%;
+      position: fixed;
+      width: 100%;
+      z-index: 9999;
+    }
+
+    #pageloader img
+    {
+      left: 50%;
+      margin-left: -32px;
+      margin-top: -32px;
+      position: absolute;
+      top: 50%;
+    }
+  </style>
+  
+</head>
+<body>
+  <div id="pageloader">
+   <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="processing..." />
+  </div>
+  <style>
+  /* ============================================ */
+  /* INTERRUPTOR: para volver a mostrar TODOS los campos, */
+  /* borra o comenta la siguiente línea (o la regla completa) */
+  .campo-oculto { display: none; }
+  /* ============================================ */
+  </style>
+  <form id="myForm">
+    <div class="campo-oculto">
+    <label for="fechaInscripcion">Fecha de Inscripción:</label>
+    <input type="date" id="fechaInscripcion">
+    </div>
+    <br>
+    <label for="Asesor">Asesor:</label>
+    <select id="Asesor">
+     <option value="ERIKA CASTRO">ERIKA CASTRO</option>
+      <option value="ROMY SALVATIERRA">ROMY SALVATIERRA</option>
+      <option value="WANDA PEREDO">WANDA PEREDO</option>
+      <option value="DIEGO MORALES">DIEGO MORALES</option>
+      <option value="RONALD BUSTILLOS">RONALD BUSTILLOS</option>
+      <option value="NATALIA DORADO">NATALIA DORADO</option>
+      <option value="DIEGO CACERES">DIEGO CACERES</option>
+    </select>
+    <br>
+    
+    <label for="anioPromocion">Año de promoción: </label>
+    <input type="number" id="anioPromocion" value = "2026">
+    
+    <br>
+    <label for="carrera">Carrera:</label>
+    <select id="carrera">
+      <option value="MEDICINA">MEDICINA</option>
+      <option value="ODONTOLOGIA">ODONTOLOGIA</option>
+      <option value="ADMINISTRACION DE EMPRESAS">ADMINISTRACION DE EMPRESAS</option>
+      <option value="CONTADURIA PUBLICA">CONTADURIA PUBLICA</option>
+      <option value="INGENIERIA COMERCIAL">INGENIERIA COMERCIAL</option>
+      <option value="INGENIERIA EMPRESARIAL">INGENIERIA EMPRESARIAL</option>
+      <option value="INGENIERIA FINANCIERA">INGENIERIA FINANCIERA</option>
+      <option value="INGENIERIA EN COMERCIO Y FINANZAS INTERNACIONALES">INGENIERIA EN COMERCIO Y FINANZAS INTERNACIONALES</option>
+      <option value="ARQUITECTURA">ARQUITECTURA</option>
+      <option value="INGENIERIA AMBIENTAL">INGENIERIA AMBIENTAL</option>
+      <option value="INGENIERIA CIVIL">INGENIERIA CIVIL</option>
+      <option value="INGENIERIA INDUSTRIAL">INGENIERIA INDUSTRIAL</option>
+      <option value="INGENIERIA MECATRONICA">INGENIERIA MECATRONICA</option>
+      <option value="INGENIERIA QUIMICA">INGENIERIA QUIMICA</option>
+      <option value="INGENIERIA DE SISTEMAS">INGENIERIA DE SISTEMAS</option>
+      <option value="INGENIERIA DE TELECOMUNICACIONES">INGENIERIA DE TELECOMUNICACIONES</option>
+      <option value="ANTROPOLOGIA">ANTROPOLOGIA</option>
+      <option value="COMUNICACION SOCIAL">COMUNICACION SOCIAL</option>
+      <option value="DERECHO">DERECHO</option>
+      <option value="DISEÑO DIGITAL MULTIMEDIA">DISEÑO DIGITAL MULTIMEDIA</option>
+      <option value="FILOSOFIA Y LETRAS">FILOSOFIA Y LETRAS</option>
+      <option value="FILOSOFIA Y LETRAS PROGRAMA COMPLEMENTARIO">FILOSOFIA Y LETRAS PROGRAMA COMPLEMENTARIO</option>
+      <option value="PSICOLOGIA">PSICOLOGIA</option>
+      <option value="LIC. TEOLOGIA PASTORAL">LIC. TEOLOGIA PASTORAL</option>
+      <option value="TEC. SUP. TEOLOGIA PASTORAL">TEC. SUP. TEOLOGIA PASTORAL</option>
+      <option value="TEC. MED. TEOLOGIA PASTORAL">TEC. MED. TEOLOGIA PASTORAL</option>
+    </select>
+        <!-- ===== PROMOCIÓN TEMPORAL: PRE UCB GRATIS — BORRAR ESTE BLOQUE CUANDO TERMINE EL EVENTO ===== -->
+    <div id="divPromoPreUCB" style="margin-bottom: 10px;">
+      <label for="grupoPreUCB">Incluir Pre Universitario GRATIS</label>
+      <select id="grupoPreUCB">
+        <option value="">NO INCLUIR</option>
+      </select>
+    </div>
+    <!-- ===== FIN BLOQUE PROMOCIÓN TEMPORAL ===== -->
+    
+    <label for="tipo">Tipo de Inscripción:</label>
+    <select id="tipo">
+      <option value="PRESENCIAL">PRESENCIAL</option>
+      <option value="VIRTUAL">VIRTUAL</option>
+    </select>
+    <br>
+    <div class="campo-oculto">
+    <label for="tipoEstudiante">Tipo de Estudiante:</label>
+    <select id="tipoEstudiante">
+      <option value="NUEVO">NUEVO</option>
+      <option value="TRASPASO">TRASPASO</option>
+      <option value="SEGUNDA CARRERA">SEGUNDA CARRERA</option>
+      <option value="CAMBIO DE SEDE">CAMBIO DE SEDE</option>
+      <option value="CONVENIO UMSS">CONVENIO UMSS</option>
+    </select>
+    </div>
+    <br>
+    <div id="divUniversidad">
+      <label for="universidad">Universidad de Traspaso</label>
+      <input type="text" id="universidad">
+      <br>
+    </div>
+    <div class="campo-oculto">
+    <label for="pack">Pack de Bienvenida</label>
+    <select id="pack">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+      <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="etapa">Etapa de Inscripción</label>
+    <select id="etapa">
+      <option value="TOMA DE MATERIAS INCOMPLETA">TOMA DE MATERIAS INCOMPLETA</option>
+      <option value="TOMA DE MATERIAS COMPLETADA">TOMA DE MATERIAS COMPLETADA</option>
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="observaciones">Observaciones de materia faltantes</label>
+    <textarea id="observaciones" rows="2"></textarea>
+    <br>
+    </div>
+    <label for="plan">Plan de Pagos</label>
+    <select id="plan">
+      <option value="ESTANDAR">ESTANDAR</option>
+      <option value="PLUS">PLUS</option>
+    </select>
+    <br>
+    <label for="metodoPago">Método de Pago</label>
+    <select id="metodoPago">
+      <option value="QR">QR</option>
+      <option value="EFECTIVO">EFECTIVO</option>
+    </select>
+    <br>
+    <label for="incentivo">Incentivos - Apoyos</label>
+    <select id="incentivo">
+      <option value="NO APLICA">NO APLICA</option>
+      <option value="INCENTIVO CATOLICO">INCENTIVO CATOLICO</option>
+      <option value="INCENTIVO OLIMPIADAS">INCENTIVO OLIMPIADAS</option>
+      <option value="INCENTIVO PRIVADO - FISCAL">INCENTIVO PRIVADO - FISCAL</option>
+      <option value="APOYO INTERIOR">APOYO INTERIOR</option>
+      <option value="APOYO FAMILIAR">APOYO FAMILIAR</option>
+      <option value="APOYO FIDELIDAD">APOYO FIDELIDAD</option>
+      <option value="INCENTIVO INSTITUCIONAL">INCENTIVO INSTITUCIONAL</option>
+
+    </select>
+    <br>
+    <div class="campo-oculto">
+    <label for="estadoIncentivo">Estado de Incentivos - Apoyos</label>
+    <select id="estadoIncentivo">
+      <option value="NO CORRESPONDE">NO CORRSPONDE</option>
+      <option value="SOLICITADO">SOLICITADO</option>
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="PASO POR BIENESTAR">PASO POR BIENESTAR</option>
+    </select>
+    <br>
+    </div>
+    <div class="campo-oculto">
+    <label for="hojaDeVida">Firma de Hoja de Vida</label>
+    <select id="hojaDeVida">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="autorizacion">Firma de Autorización y Discapacidad</label>
+    <select id="autorizacion">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+      <option value="ACTUALIZADO EN SIAAN">ACTUALIZADO EN SIAAN</option>
+    </select>
+    <br>
+    </div>
+    <div class="campo-oculto">
+    <label for="contrato">Firma de condiciones generales</label>
+    <select id="contrato">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+    </select>
+    </div>
+    <br>
+    <div class="campo-oculto">
+    <label for="firma">Firma de toma de materias</label>
+    <select id="firma">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+    </select>
+    <br>
+    </div>
+    <div class="campo-oculto">
+    <label for="pagosPendientes">Firma de Pagos pendientes</label>
+    <select id="pagosPendientes">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="FIRMADO">FIRMADO</option>
+    </select>
+    <br>
+    </div>
+    <div class="campo-oculto">
+    <h2>DOCUMENTOS ENTREGADOS</h2>
+    <label for="carnet">Fotocopia CI</label>
+    <select id="carnet">
+      <option value="ENTREGADO">ENTREGADO</option>
+      <option value="PENDIENTE">PENDIENTE</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="titulo">Fotocopia Legalizada Titulo SEDUCA</label>
+    <select id="titulo">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="tituloGratis">Fotocopia Legalizada Titulo GRATIS</label>
+    <select id="tituloGratis">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="certificado">Certificado de nacimiento</label>
+    <select id="certificado">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="fotos">Fotos</label>
+    <select id="fotos">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="libreta">Fotocopia de libreta</label>
+    <select id="libreta">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="documentoIncentivo">Documentos Incentivos Apoyos</label>
+    <select id="documentoIncentivo">
+      <option value="NO APLICA">NO APLICA</option>
+      <option value="LIBRETA DE SEXTO DE SECUNDARIA">LIBRETA DE SEXTO DE SECUNDARIA</option>
+      <option value="CERTIFICADO OLIMPIADA">CERTIFICADO OLIMPIADA</option>
+      <option value="CERTIFICADO COLEGIO DE MEJOR ESTUDIANTE ">CERTIFICADO COLEGIO DE MEJOR ESTUDIANTE </option>
+      <option value="BOLETÍN DE NOTAS">BOLETÍN DE NOTAS</option>
+      <option value="COPIA CONDICIONES INCENTIVO FUNDADOR">COPIA CONDICIONES INCENTIVO FUNDADOR</option>
+
+    </select>
+    <br>
+    </div>
+    <div class="campo-oculto">
+    <h2>TESTS ACADÉMICOS</h2>
+    <label for="ingles">Test de Ingles</label>
+    <select id="ingles">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="SI">SI</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="matematicas">Test de Matemáticas</label>
+    <select id="matematicas">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="SI">SI</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="fisica">Test de Física</label>
+    <select id="fisica">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="SI">SI</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="quimica">Test de Química</label>
+    <select id="quimica">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="SI">SI</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    <label for="lectoescritura">Test de Lectoescritura</label>
+    <select id="lectoescritura">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="SI">SI</option>
+       <option value="NO CORRESPONDE">NO CORRESPONDE</option>
+    </select>
+    <br>
+    </div>
+    <input type="button" value="Añadir" onclick="submitForm()">
+  </form>
+
+  <script>
+//////TRASPASO
+
+  var today = new Date();
+  var timezoneOffset = today.getTimezoneOffset();
+  today.setMinutes(today.getMinutes() - timezoneOffset);
+  
+  document.getElementById('fechaInscripcion').valueAsDate = today;
+
+  // 'YYYY-MM-DD' (input date) -> 'DD/MM/YYYY'. Reemplaza formatDate, que sumaba 1 al dia y fallaba a fin de mes.
+  function formatFechaInput(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function formatDate(date) {
+  var day = date.getDate() + 1;
+  var month = date.getMonth() + 1;
+  var year = date.getFullYear();
+
+  // Pad with zero if needed
+  day = day < 10 ? '0' + day : day;
+  month = month < 10 ? '0' + month : month;
+
+  return day + '/' + month + '/' + year;
+}
+
+
+function toggleUniversidadVisibility() {
+    var tipoEstudianteValue = document.getElementById('tipoEstudiante').value;
+    var universidadInput = document.getElementById('divUniversidad');
+    universidadInput.style.display = tipoEstudianteValue === 'TRASPASO' ? 'block' : 'none';
+  }
+  document.getElementById('tipoEstudiante').addEventListener('change', toggleUniversidadVisibility);
+
+    // ===== PROMOCIÓN TEMPORAL: BORRAR ESTA FUNCIÓN CUANDO TERMINE EL EVENTO =====
+    function actualizarVisibilidadPromo() {
+      var carreraValue = document.getElementById('carrera').value;
+      var divPromo = document.getElementById('divPromoPreUCB');
+      var selectPromo = document.getElementById('grupoPreUCB');
+
+      // Limpiar opciones actuales, dejando solo "NO INCLUIR"
+      selectPromo.innerHTML = '<option value="">NO INCLUIR</option>';
+
+      if (carreraValue === 'MEDICINA') {
+        // Medicina no participa en la promoción
+        divPromo.style.display = 'none';
+      }
+      else if (carreraValue === 'ODONTOLOGIA') {
+        divPromo.style.display = 'block';
+        selectPromo.innerHTML += '<option value="PRE UCB MED 1">PRE UCB CIENCIAS DE LA SALUD - GRUPO 1</option>';
+        selectPromo.innerHTML += '<option value="PRE UCB MED 2">PRE UCB CIENCIAS DE LA SALUD - GRUPO 2</option>';
+        selectPromo.innerHTML += '<option value="PRE UCB MED 3">PRE UCB CIENCIAS DE LA SALUD - GRUPO 3</option>';
+      }
+      else {
+        divPromo.style.display = 'block';
+        selectPromo.innerHTML += '<option value="PRE UCB GENERAL">PRE UCB GENERAL - GRUPO 1</option>';
+        selectPromo.innerHTML += '<option value="PRE UCB GENERAL 2">PRE UCB GENERAL - GRUPO 2</option>';
+      }
+    }
+    // ===== FIN =====
+    ///TESTS ACADEMICOS
+  function actualizarMatematicas() {
+    var carreras = ["ADMINISTRACION DE EMPRESAS", "CONTADURIA PUBLICA", "INGENIERIA COMERCIAL","INGENIERIA EN COMERCIO Y FINANZAS INTERNACIONALES", "INGENIERIA EMPRESARIAL", "INGENIERIA FINANCIERA","INGENIERIA QUIMICA", "INGENIERIA AMBIENTAL", "INGENIERIA INDUSTRIAL", "INGENIERIA DE SISTEMAS", "INGENIERIA CIVIL", "INGENIERIA DE TELECOMUNICACIONES", "INGENIERIA MECATRONICA"];
+
+    var carreraValue = document.getElementById('carrera').value;
+    var matematicasDropdown = document.getElementById('matematicas');
+
+    // Update the value of "firma" based on the selected value of "etapa"
+    matematicasDropdown.value = carreras.includes(carreraValue) ? 'PENDIENTE' : 'NO CORRESPONDE';
+  }
+  function actualizarFisica() {
+    var carreras = ["INGENIERIA QUIMICA", "INGENIERIA AMBIENTAL", "INGENIERIA INDUSTRIAL", "INGENIERIA DE SISTEMAS", "INGENIERIA CIVIL", "INGENIERIA DE TELECOMUNICACIONES", "INGENIERIA MECATRONICA"];
+
+    var carreraValue = document.getElementById('carrera').value;
+    var fisicaDropdown = document.getElementById('fisica');
+
+    // Update the value of "firma" based on the selected value of "etapa"
+    fisicaDropdown.value = carreras.includes(carreraValue) ? 'PENDIENTE' : 'NO CORRESPONDE';
+  }
+  function actualizarQuimica() {
+    var carreras = ["INGENIERIA QUIMICA", "INGENIERIA AMBIENTAL", "INGENIERIA INDUSTRIAL"];
+
+    var carreraValue = document.getElementById('carrera').value;
+    var quimicaDropdown = document.getElementById('quimica');
+
+    // Update the value of "firma" based on the selected value of "etapa"
+    quimicaDropdown.value = carreras.includes(carreraValue) ? 'PENDIENTE' : 'NO CORRESPONDE';
+  }
+
+  window.addEventListener('load', function() {
+    actualizarMatematicas();
+    actualizarFisica();
+    actualizarQuimica();
+    actualizarVisibilidadPromo(); //TEMPORAL CATO HOLIDAY
+  });
+  document.getElementById('carrera').addEventListener('change', actualizarMatematicas);
+  document.getElementById('carrera').addEventListener('change', actualizarFisica);
+  document.getElementById('carrera').addEventListener('change', actualizarQuimica);
+  document.getElementById('carrera').addEventListener('change', actualizarVisibilidadPromo); // TEMPORAL CATO HOLIDAY
+  ///////FECHA
+   function submitForm() {
+      document.getElementById('pageloader').style.display = 'block';
+
+      google.script.run.withSuccessHandler(data => {
+        alert("Se ha añadido al estudiante correctamente")
+        document.getElementById('pageloader').style.display = 'none';
+        google.script.host.close();
+      }).getDataFromUINuevosCarreras({
+        fecha: formatFechaInput(document.getElementById('fechaInscripcion').value),
+        asesor: document.getElementById('Asesor').value,
+        anioPromocion: document.getElementById('anioPromocion').value,
+        carrera: document.getElementById('carrera').value,
+        tipoInscripcion: document.getElementById('tipo').value,
+        tipoEstudiante: document.getElementById('tipoEstudiante').value,
+        pack: document.getElementById('pack').value,
+        etapa: document.getElementById('etapa').value,
+        observaciones: document.getElementById('observaciones').value,
+        firma: document.getElementById('firma').value,
+        pagosPendientes: document.getElementById('pagosPendientes').value,
+        ingles: document.getElementById('ingles').value,
+        matematicas: document.getElementById('matematicas').value,
+        fisica: document.getElementById('fisica').value,
+        quimica: document.getElementById('quimica').value,
+        lectoescritura: document.getElementById('lectoescritura').value,
+        carnet: document.getElementById('carnet').value,
+        titulo: document.getElementById('titulo').value,
+        tituloGratis: document.getElementById('tituloGratis').value,
+        certificado: document.getElementById('certificado').value,
+        fotos: document.getElementById('fotos').value,
+        libreta: document.getElementById('libreta').value,
+        documentoIncentivo: document.getElementById('documentoIncentivo').value,
+        universidad: document.getElementById('universidad').value,
+        contrato: document.getElementById('contrato').value,
+        autorizacion: document.getElementById('autorizacion').value,
+        hojaDeVida: document.getElementById('hojaDeVida').value,
+        incentivo: document.getElementById('incentivo').value,
+        estadoIncentivo: document.getElementById('estadoIncentivo').value,
+        plan: document.getElementById('plan').value,
+        metodoPago: document.getElementById('metodoPago').value,
+        grupoPreUCB: document.getElementById('grupoPreUCB').value,
+      });
+
+    // Close the dialog
+    //google.script.host.close();
+    }
+
+     
+
+   
+    
+  </script>
+</body>
+</html>
