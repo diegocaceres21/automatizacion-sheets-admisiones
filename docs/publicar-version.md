@@ -2,13 +2,12 @@
 
 Advisors install the extension unpacked (no Web Store, no Workspace admin). Chrome does not update it automatically. Instead, the panel compares its version with `version.json` on GitHub Pages and shows a download notice.
 
-## One-time setup
+## Setup (done)
 
-1. Create a **public** GitHub repository for releases only, for example `admisiones-ucb-releases`. Do not push this source repo to it.
-   - GitHub Pages on a private repo needs a paid plan.
-   - The release zip contains no secrets: the OAuth client ID is public by design, and only `@ucb.edu.bo` accounts can sign in. It does contain the spreadsheet ID, which is useless without edit access.
-2. In the repo, go to Settings > Pages > Deploy from branch `main`, folder `/`. The site URL is `https://<user>.github.io/admisiones-ucb-releases`.
-3. In `CONFIG_GENERAL`, set `versionUrl` to `https://<user>.github.io/admisiones-ucb-releases/version.json`.
+- The source repo `diegocaceres21/automatizacion-sheets-admisiones` is public, and GitHub Pages serves it from the root: https://diegocaceres21.github.io/automatizacion-sheets-admisiones/
+- Releases live in `releases/`. The panel reads `https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/version.json`. Set that URL as `versionUrl` in `CONFIG_GENERAL`.
+- The advisor guide is also published: https://diegocaceres21.github.io/automatizacion-sheets-admisiones/docs/guia-asesores.html
+- Everything in the repo is public. `.gitignore` keeps the private key, the OAuth client file, saved SIAAN pages and `dist/` out of it. Push with git; do not use the GitHub website's file upload, which ignores `.gitignore`.
 
 ## Each release
 
@@ -19,13 +18,14 @@ Advisors install the extension unpacked (no Web Store, no Workspace admin). Chro
    npm test
    ```
 
-3. Build:
+3. Build into `releases/`:
 
    ```bash
-   node scripts/package.js --base https://<user>.github.io/admisiones-ucb-releases --spreadsheet <PRODUCTION_SPREADSHEET_ID> --notas "Qué cambió"
+   node scripts/package.js --out releases --base https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases --spreadsheet <SPREADSHEET_ID> --notas "Qué cambió"
    ```
 
-4. Upload `dist/admisiones-ucb-<version>.zip` and `dist/version.json` to the releases repo, replacing `version.json`. Keep old zips so old links keep working.
+   Use the test copy ID during the parallel run, and the production ID for the real rollout.
+4. Commit and push `releases/` (the new zip and `version.json`). Keep old zips so old links keep working.
 5. Within 6 hours, advisors see "Nueva versión … disponible" in the panel. They follow "Actualizar" in [guia-asesores.md](guia-asesores.md).
 
 ## Old Apps Script menu (fallback)

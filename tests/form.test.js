@@ -63,13 +63,13 @@ test('lista inexistente en CONFIG_CAMPOS se rechaza', () => {
 });
 
 test('asesor según el email de la cuenta de Chrome', () => {
-  const rows = tabs.CONFIG_ASESORES.map((r) => (r[0] === 'DIEGO CACERES' ? ['DIEGO CACERES', 'Diego.Caceres@ucb.edu.bo'] : r));
+  const rows = tabs.CONFIG_ASESORES.map((r) => (r[0] === 'DIEGO CACERES' ? ['DIEGO CACERES', 'Asesor.Prueba@ucb.edu.bo'] : r));
   rows.push(['NO ESTA EN LA LISTA', 'otro@ucb.edu.bo']);
   const c = parseConfig({ ...tabs, CONFIG_ASESORES: rows });
-  assert.equal(asesorForEmail(c, 'diego.caceres@UCB.edu.bo'), 'DIEGO CACERES');
+  assert.equal(asesorForEmail(c, 'asesor.prueba@UCB.edu.bo'), 'DIEGO CACERES');
   assert.equal(asesorForEmail(c, 'otro@ucb.edu.bo'), null); // nombre fuera de CONFIG_LISTAS.asesores
   assert.equal(asesorForEmail(c, ''), null);
-  assert.equal(asesorForEmail(config, 'diego.caceres@ucb.edu.bo'), null); // seed sin emails
+  assert.equal(asesorForEmail(config, 'asesor.prueba@ucb.edu.bo'), null); // seed sin emails
 });
 
 test('falta CONFIG_ASESORES pide ejecutar seedConfig()', () => {

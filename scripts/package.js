@@ -1,6 +1,7 @@
 // Empaqueta extension/ en dist/admisiones-ucb-<versión>.zip y genera dist/version.json para GitHub Pages.
 // Uso: node scripts/package.js --base https://<usuario>.github.io/<repo> --spreadsheet <ID> [--notas "Qué cambió"]
 // --spreadsheet agrega defaults.json al ZIP: el asesor no necesita pegar el ID de la planilla.
+// --out <carpeta> (por defecto dist/). Para publicar: --out releases (GitHub Pages sirve el repo completo).
 // Sin dependencias: escribe el ZIP a mano (deflate de node:zlib).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const src = path.join(root, 'extension');
-const dist = path.join(root, 'dist');
+const dist = path.join(root, process.argv.includes('--out') ? process.argv[process.argv.indexOf('--out') + 1] : 'dist');
 
 const args = process.argv.slice(2);
 const arg = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : ''; };
@@ -93,7 +94,7 @@ fs.writeFileSync(path.join(dist, zipName), Buffer.concat([...chunks, centralBuf,
 const info = { version, url: base ? `${base}/${zipName}` : zipName, notas, fecha: new Date().toISOString().slice(0, 10) };
 fs.writeFileSync(path.join(dist, 'version.json'), JSON.stringify(info, null, 2) + '\n');
 
-console.log(`dist/${zipName} (${contents.length} archivos)${spreadsheetId ? ', con defaults.json' : ''}`);
+console.log(`${path.relative(root, dist)}/${zipName} (${contents.length} archivos)${spreadsheetId ? ', con defaults.json' : ''}`);
 if (!spreadsheetId) console.log('Aviso: sin --spreadsheet, cada asesor debe pegar el ID de la planilla en Opciones.');
-console.log('dist/version.json', info);
+console.log(`${path.relative(root, dist)}/version.json`, info);
 if (!base) console.log('Aviso: sin --base, la URL de version.json es relativa. Use --base https://<usuario>.github.io/<repo>');
