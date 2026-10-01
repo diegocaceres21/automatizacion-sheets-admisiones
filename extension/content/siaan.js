@@ -22,13 +22,21 @@ function readColegio() {
   };
 }
 
+/** Periodo "[1-2027] SEMESTRE ..." y carrera "DERECHO [DER]" tal como los muestra la revisión. */
+function readPeriodoCarrera() {
+  const periodo = text(document.querySelector('#f-periodo .mat-select-value-text') || document.querySelector('#f-periodo'));
+  const label = document.querySelector('label[for="f-carrera"]');
+  const carreraSIAAN = text(label?.parentElement?.querySelector('.elegido-v2')) || (document.querySelector('#f-carrera')?.value || '').trim();
+  return { periodo, carreraSIAAN };
+}
+
 function readPreview() {
   const val = (sel) => (document.querySelector(sel)?.value || '').trim();
   if (!document.querySelector('#f-doc')) return null;
   const nombre = [val('#f-ap1'), val('#f-ap2'), val('#f-nombres')].filter(Boolean).join(' ').replace(/\s+/g, ' ');
   const ci = val('#f-doc');
   if (!nombre && !ci) return null; // el formulario todavía no cargó los valores
-  return { nombre, ci, celular: val('#f-cel'), ...readColegio() };
+  return { nombre, ci, celular: val('#f-cel'), ...readColegio(), ...readPeriodoCarrera() };
 }
 
 let lastSent = undefined;

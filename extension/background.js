@@ -4,7 +4,7 @@
 //   pendingStudent { student, source, at }           estudiante CONFIRMADO listo para registrar
 //   confirmError   { message, at }                   error al leer un estudiante recién confirmado
 
-import { getSession, getStudent, findConfirmedId } from './lib/siaan.js';
+import { getSession, getStudent, findConfirmed } from './lib/siaan.js';
 import { getSpreadsheetId } from './lib/configStore.js';
 
 const DEFAULTS = { siaanIdRegional: 'PJh5GJydX69ABmU3tKVdpQ==', siaanIdEstadoConfirmado: 'ooo40MW8KdnMovKywZ6qzQ==' };
@@ -41,15 +41,17 @@ async function handleConfirmed(idPreInscripcion, tabId) {
   if (tabId !== undefined) chrome.sidePanel.open({ tabId }).catch(() => {});
   try {
     const session = await getSession();
-    const student = await getStudent(session, idPreInscripcion);
+    let student = await getStudent(session, idPreInscripcion);
 
     // Comprobar que SIAAN ya la lista como CONFIRMADA (puede tardar un instante).
-    let confirmed = false;
-    for (let i = 0; i < 4 && !confirmed; i++) {
+    // La fila de la lista trae además el periodo y la carrera (ya con los cambios hechos con "Editar").
+    let row = null;
+    for (let i = 0; i < 4 && !row; i++) {
       if (i) await sleep(1500);
-      confirmed = (await findConfirmedId(session, student.ci, await siaanParams())) === idPreInscripcion;
+      row = (await findConfirmed(session, student.ci, await siaanParams())).find((r) => r.idPreInscripcion === idPreInscripcion) || null;
     }
-    if (!confirmed) throw new Error(`SIAAN todavía no muestra como CONFIRMADA la preinscripción de ${student.nombre}. Búsquela por CI en unos segundos.`);
+    if (!row) throw new Error(`SIAAN todavía no muestra como CONFIRMADA la preinscripción de ${student.nombre}. Búsquela por CI en unos segundos.`);
+    student = { ...student, periodo: row.periodo, carreraSIAAN: row.carreraSIAAN };
 
     await chrome.storage.session.set({ pendingStudent: { student, source: 'confirmacion', at: Date.now() }, confirmError: null });
     await chrome.action.setBadgeBackgroundColor({ color: '#137333' });

@@ -4,7 +4,8 @@ import { clearConfigCache, loadConfig } from '../lib/configStore.js';
 import { applyRules, asesorForEmail, fieldsFor, initialValues, isActive, promoOptions } from '../lib/form.js';
 import { headerWarnings, precheck, registrar } from '../lib/registrar.js';
 import { SheetsClient, chromeAuth } from '../lib/sheets.js';
-import { studentByCI } from '../lib/siaan.js';
+import { studentsByCI } from '../lib/siaan.js';
+import { carreraFromSIAAN, destinoForPeriodo, periodoCode } from '../lib/siaanMatch.js';
 import { checkForUpdate } from '../lib/updates.js';
 
 const sheets = new SheetsClient(chromeAuth);
@@ -22,6 +23,7 @@ const state = {
   confirmError: null,
   searching: false,
   searchError: null,
+  candidates: [],       // varias preinscripciones confirmadas para el mismo CI: el asesor elige una
   destinoId: null,
   check: { status: 'idle', duplicado: false, warnings: [], message: '' },
   values: {},
@@ -49,6 +51,31 @@ const spinner = () => h('span', { class: 'spinner', 'aria-hidden': 'true' });
 
 const destino = () => state.config?.destinos.find((d) => d.id === state.destinoId) || null;
 
+/** Estudiante cuyo periodo y carrera de SIAAN guían la preselección: el confirmado o, si no hay, la vista previa. */
+const siaanSource = () => state.student || state.preview;
+
+/** Carrera de SIAAN reconocida en la lista del campo carrera del destino actual (o null). */
+function carreraSIAANMatch() {
+  const d = destino();
+  const s = siaanSource();
+  if (!state.config || !d?.carreraDesdeSIAAN || !s?.carreraSIAAN) return null;
+  const field = fieldsFor(state.config, d.plantilla).find((f) => f.campo === 'carrera');
+  return field ? carreraFromSIAAN(state.config, field.lista, s.carreraSIAAN) : null;
+}
+
+// Preselección automática una sola vez por estudiante: si el asesor cambia el destino a mano, se respeta.
+let autoKey = null;
+function autoApply() {
+  const s = siaanSource();
+  if (!state.config || !s) return;
+  const key = `${s.idPreInscripcion || s.ci}|${s.periodo}|${s.carreraSIAAN}`;
+  if (key === autoKey) return;
+  autoKey = key;
+  const d = destinoForPeriodo(state.config, s.periodo);
+  if (d) state.destinoId = d.id;
+  resetForm();
+}
+
 // ---------- carga ----------
 
 async function loadAll(force = false) {
@@ -59,6 +86,8 @@ async function loadAll(force = false) {
     state.spreadsheetId = spreadsheetId;
     if (state.destinoId && !destino()?.activo) state.destinoId = null;
     if (state.destinoId) resetForm();
+    autoKey = null;
+    autoApply();
     checkForUpdate(config.general.versionUrl, chrome.runtime.getManifest().version).then((info) => {
       state.update = info;
       renderGlobal();
@@ -88,6 +117,7 @@ async function init() {
   chrome.storage.session.onChanged.addListener((changes) => {
     const s2 = Object.fromEntries(Object.entries(changes).map(([k, v]) => [k, v.newValue]));
     applySession(s2);
+    autoApply();
     if ('pendingStudent' in changes && changes.pendingStudent.newValue) {
       chrome.action.setBadgeText({ text: '' });
       runCheck();
@@ -118,9 +148,10 @@ async function searchCI(ci) {
   state.searchError = null;
   render();
   try {
-    state.student = await studentByCI(ci, state.config.general);
-    state.studentSource = 'ci';
+    const found = await studentsByCI(ci, state.config.general);
     state.result = null;
+    if (found.length === 1) pickCandidate(found[0]);
+    else state.candidates = found;
   } catch (e) {
     state.searchError = e.message;
   }
@@ -129,9 +160,20 @@ async function searchCI(ci) {
   runCheck();
 }
 
+function pickCandidate(s) {
+  state.student = s;
+  state.studentSource = 'ci';
+  state.candidates = [];
+  autoApply();
+  render();
+  runCheck();
+}
+
 async function clearStudent() {
   state.student = null;
   state.studentSource = null;
+  state.candidates = [];
+  autoKey = null;
   state.check = { status: 'idle', duplicado: false, warnings: [], message: '' };
   await chrome.storage.session.set({ pendingStudent: null, confirmError: null });
   render();
@@ -146,6 +188,10 @@ function resetForm() {
   const d = destino();
   const remembered = { ...state.remembered, ...(autoAsesor() ? { asesor: autoAsesor() } : {}) };
   state.values = d ? initialValues(state.config, d.plantilla, { remembered }) : {};
+  if (d?.carreraDesdeSIAAN && siaanSource()?.carreraSIAAN) {
+    // Carrera reconocida: se usa. No reconocida (o SIN CARRERA): queda vacía para que el asesor la elija.
+    state.values = applyRules(state.config, d.plantilla, { ...state.values, carrera: carreraSIAANMatch() || '' });
+  }
 }
 
 async function selectDestino(id) {
@@ -211,6 +257,9 @@ function canSubmit() {
     return { ok: false, reason: state.preview ? 'Confirme la preinscripción en SIAAN para registrarla.' : 'Busque un estudiante o confírmelo en SIAAN.' };
   }
   if (!destino()) return { ok: false, reason: 'Elija un destino.' };
+  const vacio = fieldsFor(state.config, destino().plantilla)
+    .find((f) => f.tipo === 'select' && isActive(f, state.values) && state.values[f.campo] === '');
+  if (vacio) return { ok: false, reason: `Elija: ${vacio.etiqueta}.` };
   if (state.check.status === 'checking') return { ok: false, reason: 'Revisando la planilla…' };
   if (state.check.status === 'error') return { ok: false, reason: 'No se pudo revisar la planilla.' };
   if (state.check.duplicado) return { ok: false, reason: 'El estudiante ya está registrado en este destino.' };
@@ -249,6 +298,8 @@ function studentCard(s, badge, badgeClass, onClose) {
     h('div', { class: 'name' }, s.nombre || '(sin nombre)'),
     h('div', { class: 'meta' }, `CI ${s.ci || '—'} · Cel. ${s.celular || '—'}`),
     h('div', { class: 'meta' }, [s.colegio, s.departamentoColegio].filter(Boolean).join(' · ') || 'Sin colegio'),
+    (s.periodo || s.carreraSIAAN) && h('div', { class: 'meta' },
+      [s.periodo && `Periodo ${periodoCode(s.periodo)}`, s.carreraSIAAN].filter(Boolean).join(' · ')),
     onClose && h('button', { class: 'icon close', type: 'button', title: 'Quitar estudiante', 'aria-label': 'Quitar estudiante', onclick: onClose }, '×'));
 }
 
@@ -261,6 +312,15 @@ function renderStudent() {
     if (state.preview) {
       out.push(studentCard(state.preview, 'Vista previa · pendiente de confirmar', 'warn'));
       out.push(note('info', 'Al presionar "Confirmar" en SIAAN, el estudiante quedará listo aquí para registrarlo.'));
+    }
+    if (state.candidates.length) {
+      out.push(note('info', `Este carnet tiene ${state.candidates.length} preinscripciones confirmadas. Elija cuál registrar:`));
+      out.push(h('div', { class: 'candidates' }, state.candidates.map((c) => {
+        const d = destinoForPeriodo(state.config, c.periodo);
+        return h('button', { class: 'candidate', type: 'button', onclick: () => pickCandidate(c) },
+          h('strong', {}, `Periodo ${periodoCode(c.periodo) || '—'}`),
+          h('span', {}, [c.carreraSIAAN, d && `→ ${d.grupo === d.etiqueta ? d.etiqueta : `${d.grupo} ${d.etiqueta}`}`].filter(Boolean).join(' ')));
+      })));
     }
     const input = h('input', { type: 'search', inputmode: 'numeric', placeholder: 'Número de carnet', 'aria-label': 'Número de carnet' });
     const go = () => searchCI(input.value);
@@ -284,7 +344,18 @@ function renderDestinos() {
     ds.length > 1 || ds[0].etiqueta !== grupo ? h('div', { class: 'group-label' }, grupo) : null,
     h('div', { class: 'chips' }, ds.map((d) => h('button', {
       class: 'chip', type: 'button', 'aria-pressed': String(d.id === state.destinoId), onclick: () => selectDestino(d.id)
-    }, d.etiqueta))))));
+    }, d.etiqueta))))), periodoHint());
+}
+
+/** Explica la preselección por periodo, o avisa si el destino elegido no coincide con SIAAN. */
+function periodoHint() {
+  const s = siaanSource();
+  if (!s?.periodo) return null;
+  const code = periodoCode(s.periodo);
+  const sugerido = destinoForPeriodo(state.config, s.periodo);
+  if (!sugerido) return note('warn', `El periodo ${code} de SIAAN no está asignado a ningún destino (CONFIG_DESTINOS.periodoSIAAN). Elija el destino manualmente.`);
+  if (sugerido.id === state.destinoId) return h('p', { class: 'hint' }, `Preseleccionado según el periodo ${code} de SIAAN.`);
+  return note('warn', `SIAAN indica el periodo ${code}, que corresponde a "${sugerido.hoja}". Verifique el destino elegido.`);
 }
 
 function renderCheck() {
@@ -305,6 +376,7 @@ function fieldControl(f) {
   const onChange = (e) => {
     state.values[f.campo] = e.target.value;
     const d = destino();
+    renderFooter();
     const dependents = fieldsFor(state.config, d.plantilla).some((x) => x.condicion?.campo === f.campo);
     if (f.campo === 'carrera' || dependents) {
       state.values = applyRules(state.config, d.plantilla, state.values);
@@ -316,6 +388,7 @@ function fieldControl(f) {
   if (f.tipo === 'select') {
     const opts = state.config.listas[f.lista] || [];
     control = h('select', { id, onchange: onChange },
+      value === '' ? h('option', { value: '', selected: true, disabled: true }, '— Elija una opción —') : null,
       opts.map((o) => h('option', { value: o, selected: o === value }, o)),
       value && !opts.includes(value) ? h('option', { value, selected: true }, value) : null);
   } else if (f.tipo === 'promo') {
@@ -331,9 +404,16 @@ function fieldControl(f) {
     control = h('input', { id, type, value, oninput: onChange });
   }
   const label = f.tipo === 'promo' ? (state.config.general.promoEtiqueta || f.etiqueta) : f.etiqueta;
-  const hint = f.campo === 'asesor' && autoAsesor() && value === autoAsesor()
-    ? h('p', { class: 'hint' }, `Según su cuenta ${state.email}`)
-    : null;
+  let hint = null;
+  if (f.campo === 'asesor' && autoAsesor() && value === autoAsesor()) {
+    hint = h('p', { class: 'hint' }, `Según su cuenta ${state.email}`);
+  } else if (f.campo === 'carrera' && destino()?.carreraDesdeSIAAN && siaanSource()?.carreraSIAAN) {
+    const siaan = siaanSource().carreraSIAAN;
+    const match = carreraSIAANMatch();
+    if (!match) hint = h('p', { class: 'hint warn' }, `SIAAN: "${siaan}" no se reconoce en la lista. Elija la carrera (o agréguela en CONFIG_CARRERAS_SIAAN).`);
+    else if (match === value) hint = h('p', { class: 'hint' }, 'Según la preinscripción en SIAAN.');
+    else hint = h('p', { class: 'hint warn' }, `SIAAN indica ${match}.`);
+  }
   return h('div', { class: 'field' }, h('label', { for: id }, label), control, hint);
 }
 

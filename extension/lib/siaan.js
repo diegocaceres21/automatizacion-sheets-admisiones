@@ -47,8 +47,11 @@ async function call(session, path) {
   return res.json();
 }
 
-/** idPreInscripcion de la preinscripción CONFIRMADA con ese CI, o null. */
-export async function findConfirmedId(session, ci, general) {
+/**
+ * Preinscripciones CONFIRMADAS con ese CI (puede haber más de una: ej. Pre UCB y carrera).
+ * @returns {Promise<{ idPreInscripcion: string, periodo: string, carreraSIAAN: string }[]>}
+ */
+export async function findConfirmed(session, ci, general) {
   const q = new URLSearchParams({
     idRegional: general.siaanIdRegional,
     idEstadoPreinscripcion: general.siaanIdEstadoConfirmado,
@@ -56,16 +59,26 @@ export async function findConfirmedId(session, ci, general) {
   });
   const data = await call(session, `ObtenerListaPreinscripcionesReducidas?${q}`);
   const cell = (row, name) => row.find((c) => c.nombreColumna === name)?.contenidoCelda?.[0];
+  const text = (row, name) => String(cell(row, name)?.contenido ?? '').trim();
+  const out = [];
   for (const row of data?.datos || []) {
-    if (String(cell(row, 'Documento de identidad')?.contenido ?? '').trim() !== String(ci).trim()) continue;
+    if (text(row, 'Documento de identidad') !== String(ci).trim()) continue;
     const id = cell(row, 'Acciones')?.parametros?.find((p) => p.nombreParametro === 'idPreInscripcion')?.valorParametro;
-    if (id) return id;
+    if (id) out.push({ idPreInscripcion: id, periodo: text(row, 'Periodo Académico'), carreraSIAAN: text(row, 'Carrera') });
   }
-  return null;
+  return out;
 }
 
-/** Datos del estudiante en el formato que usan las planillas. */
-export async function getStudent(session, idPreInscripcion) {
+/** idPreInscripcion de la primera preinscripción CONFIRMADA con ese CI, o null. */
+export async function findConfirmedId(session, ci, general) {
+  return (await findConfirmed(session, ci, general))[0]?.idPreInscripcion ?? null;
+}
+
+/**
+ * Datos del estudiante en el formato que usan las planillas.
+ * @param {{ periodo?: string, carreraSIAAN?: string }} extra  datos de la lista (periodo y carrera)
+ */
+export async function getStudent(session, idPreInscripcion, extra = {}) {
   const data = await call(session, `ObtenerDatosPreInscripcionReducida?idPreinscripcion=${encodeURIComponent(idPreInscripcion)}`);
   const p = data?.datos?.preInscripcion;
   if (!p) throw new SiaanError('No se pudieron leer los datos de la preinscripción.', 'no-encontrado');
@@ -75,16 +88,18 @@ export async function getStudent(session, idPreInscripcion) {
     ci: String(p.datosPersonales.documentoIdentidad ?? '').trim(),
     celular: String(p.datosPersonales.celulares ?? '').trim(),
     colegio: String(p.datosColegio?.colegio ?? '').trim(),
-    departamentoColegio: String(p.datosColegio?.departamento ?? '').trim()
+    departamentoColegio: String(p.datosColegio?.departamento ?? '').trim(),
+    periodo: extra.periodo || '',
+    carreraSIAAN: extra.carreraSIAAN || ''
   };
 }
 
-/** Flujo por CI (fuera de la página de SIAAN). */
-export async function studentByCI(ci, general) {
+/** Flujo por CI (fuera de la página de SIAAN). Devuelve una entrada por preinscripción confirmada. */
+export async function studentsByCI(ci, general) {
   const session = await getSession();
-  const id = await findConfirmedId(session, ci, general);
-  if (!id) {
+  const rows = await findConfirmed(session, ci, general);
+  if (!rows.length) {
     throw new SiaanError(`No hay una preinscripción CONFIRMADA con el CI ${ci}. Confírmela primero en SIAAN.`, 'no-encontrado');
   }
-  return getStudent(session, id);
+  return Promise.all(rows.map((r) => getStudent(session, r.idPreInscripcion, r)));
 }

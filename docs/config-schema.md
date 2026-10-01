@@ -21,7 +21,7 @@ Key/value pairs: `clave | valor | descripcion`.
 
 ## CONFIG_DESTINOS
 
-One row per registration target: `id | grupo | etiqueta | hoja | filasEncabezado | columnaCI | plantilla | activo`.
+One row per registration target: `id | grupo | etiqueta | hoja | filasEncabezado | columnaCI | plantilla | activo | periodoSIAAN | carreraDesdeSIAAN`.
 
 - `grupo` + `etiqueta`: how the target appears in the panel. Targets with the same `grupo` appear together.
 - `hoja`: sheet name in this spreadsheet.
@@ -29,6 +29,19 @@ One row per registration target: `id | grupo | etiqueta | hoja | filasEncabezado
 - `columnaCI`: column letter used for the duplicate check.
 - `plantilla`: selects fields (CONFIG_CAMPOS) and columns (CONFIG_COLUMNAS).
 - `activo`: `FALSE` hides the target.
+- `periodoSIAAN`: the academic-period code from SIAAN, the part in brackets (`2026-CPRU-DIC` for "[2026-CPRU-DIC] PERIODO DE CURSO PREUNIVERSITARIO UCB DICIEMBRE"). When a student's preinscription has this period, the panel preselects this target. Each code may appear in only one row. **Update these codes every term.**
+- `carreraDesdeSIAAN`: `TRUE` fills the `carrera` field from the preinscription (NUEVOS CARRERAS). If SIAAN's carrera is not recognized, the field stays empty and the advisor must choose one.
+
+Initial values:
+
+| id | periodoSIAAN | carreraDesdeSIAAN |
+|---|---|---|
+| GEN1 | 2026-CPRU-DIC | FALSE |
+| GEN2 | 2027-CPRU-ENE | FALSE |
+| MED1 | 2026-CPS-NOV | FALSE |
+| MED2 | 2026-CPS-DIC | FALSE |
+| MED3 | 2027-CPS-ENE | FALSE |
+| NUEVOS | 1-2027 | TRUE |
 
 ## CONFIG_LISTAS
 
@@ -72,6 +85,10 @@ The `INCENTIVOS` template is the row for the Bienestar spreadsheet. It uses the 
 ## CONFIG_DEPARTAMENTOS
 
 `carrera | departamento`. `*` is the fallback.
+
+## CONFIG_CARRERAS_SIAAN
+
+`siaan | carrera`: aliases for carreras whose SIAAN name differs from the list option by more than accents or the "[SIGLA]" suffix. For example, `LICENCIATURA EN DERECHO` maps to `DERECHO`. The panel already matches "INGENIERÍA DE SISTEMAS [SIS]" to "INGENIERIA DE SISTEMAS" without an alias. The panel shows an alias hint whenever it cannot recognize a carrera. Starts empty.
 
 ## CONFIG_ASESORES
 

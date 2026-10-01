@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.1.0.zip",
-  "notas": "Primera versión para prueba (planilla de prueba)",
+  "version": "0.2.0",
+  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.2.0.zip",
+  "notas": "Destino según el periodo de SIAAN y carrera automática en NUEVOS CARRERAS",
   "fecha": "2026-10-01"
 }

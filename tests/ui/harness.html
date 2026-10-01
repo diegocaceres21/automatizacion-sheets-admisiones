@@ -15,7 +15,8 @@
     const scenario = params.get('s') || 'confirmado';
     if (params.get('u')) tabs.CONFIG_GENERAL = tabs.CONFIG_GENERAL.map((r) => (r[0] === 'versionUrl' ? ['versionUrl', new URL('./version.json', location.href).href, r[2]] : r));
 
-    const student = { idPreInscripcion: 'x', nombre: 'MAMANI QUISPE ANA LUCIA', ci: '9876543', celular: '71234567', colegio: 'DESPERTAR', departamentoColegio: 'COCHABAMBA' };
+    const student = { idPreInscripcion: 'x', nombre: 'MAMANI QUISPE ANA LUCIA', ci: '9876543', celular: '71234567', colegio: 'DESPERTAR', departamentoColegio: 'COCHABAMBA',
+      periodo: params.get('p') || '', carreraSIAAN: params.get('c') || '' };
     const session = {
       configCache: { spreadsheetId: 'TEST', at: Date.now(), tabs },
       pendingStudent: scenario === 'confirmado' || scenario === 'duplicado' ? { student, source: 'confirmacion', at: Date.now() } : null,

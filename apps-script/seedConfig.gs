@@ -36,15 +36,23 @@ var SEED_GENERAL = [
   ['versionUrl', '', 'URL de version.json (GitHub Pages). Si hay versión nueva, el panel muestra un aviso.']
 ];
 
-// id, grupo (menú), etiqueta, hoja, filasEncabezado, columnaCI, plantilla, activo
+// id, grupo (menú), etiqueta, hoja, filasEncabezado, columnaCI, plantilla, activo, periodoSIAAN, carreraDesdeSIAAN
+// periodoSIAAN: código del periodo académico en SIAAN (lo que va entre corchetes). El panel preselecciona este destino.
+// carreraDesdeSIAAN: TRUE = el campo carrera se llena con la carrera de la preinscripción.
 var SEED_DESTINOS = [
-  ['NUEVOS', 'NUEVOS CARRERAS', 'NUEVOS CARRERAS', 'NUEVOS CARRERAS', 1, 'S', 'NUEVOS', true],
-  ['MED1', 'PRE UCB CIENCIAS DE LA SALUD', 'GRUPO 1', 'PRE UCB MED 1', 2, 'H', 'PRE_MED', true],
-  ['MED2', 'PRE UCB CIENCIAS DE LA SALUD', 'GRUPO 2', 'PRE UCB MED 2', 2, 'H', 'PRE_MED', true],
-  ['MED3', 'PRE UCB CIENCIAS DE LA SALUD', 'GRUPO 3', 'PRE UCB MED 3', 2, 'H', 'PRE_MED', true],
-  ['GEN1', 'PRE UCB GENERAL', 'GRUPO 1', 'PRE UCB GENERAL', 2, 'G', 'PRE_GENERAL', true],
-  ['GEN2', 'PRE UCB GENERAL', 'GRUPO 2', 'PRE UCB GENERAL 2', 2, 'G', 'PRE_GENERAL', true]
+  ['NUEVOS', 'NUEVOS CARRERAS', 'NUEVOS CARRERAS', 'NUEVOS CARRERAS', 1, 'S', 'NUEVOS', true, '1-2027', true],
+  ['MED1', 'PRE UCB CIENCIAS DE LA SALUD', 'GRUPO 1', 'PRE UCB MED 1', 2, 'H', 'PRE_MED', true, '2026-CPS-NOV', false],
+  ['MED2', 'PRE UCB CIENCIAS DE LA SALUD', 'GRUPO 2', 'PRE UCB MED 2', 2, 'H', 'PRE_MED', true, '2026-CPS-DIC', false],
+  ['MED3', 'PRE UCB CIENCIAS DE LA SALUD', 'GRUPO 3', 'PRE UCB MED 3', 2, 'H', 'PRE_MED', true, '2027-CPS-ENE', false],
+  ['GEN1', 'PRE UCB GENERAL', 'GRUPO 1', 'PRE UCB GENERAL', 2, 'G', 'PRE_GENERAL', true, '2026-CPRU-DIC', false],
+  ['GEN2', 'PRE UCB GENERAL', 'GRUPO 2', 'PRE UCB GENERAL 2', 2, 'G', 'PRE_GENERAL', true, '2027-CPRU-ENE', false]
 ];
+var ENCABEZADOS_DESTINOS = ['id', 'grupo', 'etiqueta', 'hoja', 'filasEncabezado', 'columnaCI', 'plantilla', 'activo',
+  'periodoSIAAN', 'carreraDesdeSIAAN'];
+
+// siaan (nombre de la carrera como lo muestra SIAAN), carrera (opción de CONFIG_LISTAS).
+// Solo hace falta cuando los nombres difieren más allá de tildes o la sigla entre corchetes. Vacío al inicio.
+var SEED_CARRERAS_SIAAN = [];
 
 var CARRERAS_GENERAL = ['ADMINISTRACION DE EMPRESAS', 'CONTADURIA PUBLICA', 'INGENIERIA COMERCIAL', 'INGENIERIA EMPRESARIAL',
   'INGENIERIA FINANCIERA', 'INGENIERIA EN COMERCIO Y FINANZAS INTERNACIONALES', 'ARQUITECTURA', 'INGENIERIA AMBIENTAL',
@@ -214,9 +222,11 @@ function seedConfig() {
     if (agregadas.length) creadas.push('CONFIG_GENERAL (claves nuevas: ' + agregadas.join(', ') + ')');
   }
 
-  if (crearHoja_(ss, 'CONFIG_DESTINOS',
-      ['id', 'grupo', 'etiqueta', 'hoja', 'filasEncabezado', 'columnaCI', 'plantilla', 'activo'], SEED_DESTINOS)) {
+  if (crearHoja_(ss, 'CONFIG_DESTINOS', ENCABEZADOS_DESTINOS, SEED_DESTINOS)) {
     creadas.push('CONFIG_DESTINOS');
+  } else {
+    var columnasNuevas = completarDestinos_(ss);
+    if (columnasNuevas.length) creadas.push('CONFIG_DESTINOS (columnas nuevas: ' + columnasNuevas.join(', ') + ')');
   }
 
   var nombresListas = Object.keys(SEED_LISTAS);
@@ -244,6 +254,7 @@ function seedConfig() {
     creadas.push('CONFIG_DEPARTAMENTOS');
   }
   if (crearHoja_(ss, 'CONFIG_ASESORES', ['nombre', 'email'], SEED_ASESORES)) creadas.push('CONFIG_ASESORES');
+  if (crearHoja_(ss, 'CONFIG_CARRERAS_SIAAN', ['siaan', 'carrera'], SEED_CARRERAS_SIAAN)) creadas.push('CONFIG_CARRERAS_SIAAN');
 
   Logger.log(creadas.length ? 'Hojas creadas: ' + creadas.join(', ') : 'No se creó nada: todas las hojas CONFIG_* ya existen.');
 }
@@ -281,6 +292,25 @@ function encabezadosIncentivos_() {
 function leerEncabezados_(hoja, filasEncabezado, columnas) {
   return hoja.getRange(filasEncabezado, 1, 1, columnas).getDisplayValues()[0]
     .map(function (h) { return String(h).replace(/\s+/g, ' ').trim(); });
+}
+
+// Agrega a CONFIG_DESTINOS las columnas nuevas (con los valores semilla de cada id), sin tocar las existentes.
+function completarDestinos_(ss) {
+  var hoja = ss.getSheetByName('CONFIG_DESTINOS');
+  var valores = hoja.getDataRange().getDisplayValues();
+  var enc = valores[0];
+  var nuevas = ENCABEZADOS_DESTINOS.filter(function (h) { return enc.indexOf(h) < 0; });
+  nuevas.forEach(function (nombre) {
+    var iSeed = ENCABEZADOS_DESTINOS.indexOf(nombre);
+    var col = hoja.getLastColumn() + 1;
+    var columna = [[nombre]].concat(valores.slice(1).map(function (fila) {
+      var seed = SEED_DESTINOS.filter(function (d) { return d[0] === fila[enc.indexOf('id')]; })[0];
+      return [seed ? String(seed[iSeed]) : ''];
+    }));
+    hoja.getRange(1, col, columna.length, 1).setNumberFormat('@').setValues(columna);
+    hoja.getRange(1, col).setFontWeight('bold').setBackground('#e8eaed');
+  });
+  return nuevas;
 }
 
 // Agrega a CONFIG_GENERAL las claves nuevas que todavía no tiene, sin tocar las existentes.
@@ -338,6 +368,7 @@ function verificarConfig() {
   var promo = tabla('CONFIG_PROMO');
   var reglas = tabla('CONFIG_REGLAS');
   var asesores = tabla('CONFIG_ASESORES');
+  var carrerasSiaan = tabla('CONFIG_CARRERAS_SIAAN');
 
   var hojaListas = ss.getSheetByName('CONFIG_LISTAS');
   var listas = {};
@@ -408,6 +439,20 @@ function verificarConfig() {
       if (ids.indexOf(id) < 0) errores.push('CONFIG_PROMO ' + p.carrera + ': destino "' + id + '" no existe.');
     });
   });
+  var periodos = {};
+  destinos.forEach(function (d) {
+    if (String(d.activo).toUpperCase() !== 'TRUE') return;
+    var p = String(d.periodoSIAAN || '').trim().toUpperCase();
+    if (!p) { avisos.push('Destino ' + d.id + ': sin periodoSIAAN; no se preseleccionará.'); return; }
+    if (periodos[p]) errores.push('CONFIG_DESTINOS: el periodo ' + p + ' está en ' + periodos[p] + ' y en ' + d.id + '.');
+    periodos[p] = d.id;
+  });
+  carrerasSiaan.forEach(function (c) {
+    if (listas.carreras_nuevos && listas.carreras_nuevos.indexOf(c.carrera) < 0) {
+      errores.push('CONFIG_CARRERAS_SIAAN: "' + c.carrera + '" no está en la lista carreras_nuevos.');
+    }
+  });
+
   var emails = {};
   asesores.forEach(function (a) {
     if (listas.asesores && listas.asesores.indexOf(a.nombre) < 0) {

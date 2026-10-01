@@ -53,6 +53,24 @@ test('getStudent arma el estudiante como lo hacía codigo.gs', () =>
     } }
   }), async () => {
     assert.deepEqual(await getStudent(session, 'id1'), {
-      idPreInscripcion: 'id1', nombre: 'PEREZ LOPEZ JUAN', ci: '123', celular: '777', colegio: 'COL X', departamentoColegio: 'COCHABAMBA'
+      idPreInscripcion: 'id1', nombre: 'PEREZ LOPEZ JUAN', ci: '123', celular: '777', colegio: 'COL X', departamentoColegio: 'COCHABAMBA',
+      periodo: '', carreraSIAAN: ''
     });
   }));
+
+test('findConfirmed devuelve todas las preinscripciones confirmadas del CI con periodo y carrera', async () => {
+  const { findConfirmed } = await import('../extension/lib/siaan.js');
+  const withPeriodo = (ci, id, periodo, carrera) => row(ci, 'CONFIRMADO', id).map((c) =>
+    c.nombreColumna === 'Periodo Académico' ? { ...c, contenidoCelda: [{ contenido: periodo }] }
+      : c.nombreColumna === 'Carrera' ? { ...c, contenidoCelda: [{ contenido: carrera }] } : c);
+  await withFetch(async () => json(200, { datos: [
+    withPeriodo('123', 'pre', '2026-CPRU-DIC', 'SIN CARRERA'),
+    withPeriodo('123', 'car', '1-2027', 'DERECHO'),
+    withPeriodo('999', 'otro', '1-2027', 'DERECHO')
+  ] }), async () => {
+    assert.deepEqual(await findConfirmed(session, '123', general), [
+      { idPreInscripcion: 'pre', periodo: '2026-CPRU-DIC', carreraSIAAN: 'SIN CARRERA' },
+      { idPreInscripcion: 'car', periodo: '1-2027', carreraSIAAN: 'DERECHO' }
+    ]);
+  });
+});

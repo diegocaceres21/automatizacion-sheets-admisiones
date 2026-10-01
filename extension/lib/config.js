@@ -1,10 +1,12 @@
 // Lectura y validación de las hojas CONFIG_* (esquema: docs/config-schema.md).
 
+import { normalizeText } from './siaanMatch.js';
+
 export const CONFIG_VERSION = 1;
 
 export const CONFIG_TABS = [
   'CONFIG_GENERAL', 'CONFIG_DESTINOS', 'CONFIG_LISTAS', 'CONFIG_CAMPOS',
-  'CONFIG_COLUMNAS', 'CONFIG_PROMO', 'CONFIG_REGLAS', 'CONFIG_DEPARTAMENTOS', 'CONFIG_ASESORES'
+  'CONFIG_COLUMNAS', 'CONFIG_PROMO', 'CONFIG_REGLAS', 'CONFIG_DEPARTAMENTOS', 'CONFIG_ASESORES', 'CONFIG_CARRERAS_SIAAN'
 ];
 
 export const STUDENT_KEYS = ['nombre', 'ci', 'celular', 'colegio', 'departamentoColegio'];
@@ -53,7 +55,9 @@ export function parseConfig(tabs) {
     filasEncabezado: Number(d.filasEncabezado) || 1,
     columnaCI: d.columnaCI.toUpperCase(),
     plantilla: d.plantilla,
-    activo: bool(d.activo)
+    activo: bool(d.activo),
+    periodoSIAAN: d.periodoSIAAN || '',            // ej. 2026-CPRU-DIC: preselecciona este destino
+    carreraDesdeSIAAN: bool(d.carreraDesdeSIAAN)   // TRUE: la carrera se toma de SIAAN
   }));
 
   const [listHeader = [], ...listRows] = tabs.CONFIG_LISTAS;
@@ -90,7 +94,15 @@ export function parseConfig(tabs) {
     .filter((a) => a.email && a.nombre)
     .map((a) => [a.email.toLowerCase(), a.nombre]));
 
-  const config = { version: CONFIG_VERSION, general, destinos, listas, campos, columnas, promo, reglas, departamentos, asesoresPorEmail };
+  // carrera tal como la escribe SIAAN (normalizada) -> opción de la lista de carreras
+  const carrerasSIAAN = Object.fromEntries(toObjects(tabs.CONFIG_CARRERAS_SIAAN)
+    .filter((r) => r.siaan && r.carrera)
+    .map((r) => [normalizeText(r.siaan), r.carrera]));
+
+  const config = {
+    version: CONFIG_VERSION, general, destinos, listas, campos, columnas, promo, reglas, departamentos,
+    asesoresPorEmail, carrerasSIAAN
+  };
   validate(config);
   return config;
 }
