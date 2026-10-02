@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Admisiones UCB",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Registro de estudiantes en las planillas de Admisiones desde el panel lateral.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzfpxeLK8mb+nsAeptHhr42bUA3Mp/OgMsMEpJZRlEZ6yN82FYWKXx/bATaP5jnpEuacy7Pjmu0JJJpCAWWxA4yyegmZ8iv6zzlWY9JzwoF53w+YbdTgVwzpA3bxgwUGTfbnKBsBeumMebaGPK+3p4A96dW2jbPGD6w5pOitN6hnTGDe6m1FDDNNBzSl+XOixBlra0U8G888Koe0at3nZ15i5ma0x6UgenZgSk749HsYf2QvMKypVbg2bnNJJiIi6kQo5jAzQNiXECvON4kPvlc6igxaB3uvIdPPVHOXsoL/92YLeODuPK7GZVJOK065AtlqISeN+dXbqFn57TLdn6QIDAQAB",
   "oauth2": {

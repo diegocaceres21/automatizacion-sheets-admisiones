@@ -1,6 +1,6 @@
 // Panel lateral: estudiante (SIAAN o CI) -> destino -> formulario -> registro en Sheets.
 
-import { clearConfigCache, loadConfig } from '../lib/configStore.js';
+import { clearConfigCache, getSpreadsheetId, loadConfig } from '../lib/configStore.js';
 import { applyRules, asesorForEmail, fieldsFor, initialValues, isActive, promoOptions } from '../lib/form.js';
 import { headerWarnings, precheck, registrar } from '../lib/registrar.js';
 import { SheetsClient, chromeAuth } from '../lib/sheets.js';
@@ -15,6 +15,8 @@ const $ = (id) => document.getElementById(id);
 const state = {
   config: null,
   spreadsheetId: '',
+  spreadsheetSource: '', // 'central' | 'override' | ... (lib/planilla.js)
+  spreadsheetChanged: false,
   loadError: null,
   remembered: {},
   email: '',            // cuenta de Chrome del asesor (identity.email)
@@ -84,7 +86,9 @@ function autoApply() {
 async function loadAll(force = false) {
   state.loadError = null;
   try {
-    const { spreadsheetId, config } = await loadConfig(sheets, { force });
+    const { spreadsheetId, source, config } = await loadConfig(sheets, { force });
+    state.spreadsheetChanged = Boolean(state.spreadsheetId && state.spreadsheetId !== spreadsheetId);
+    state.spreadsheetSource = source;
     state.config = config;
     state.spreadsheetId = spreadsheetId;
     if (state.destinoId && !destino()?.activo) state.destinoId = null;
@@ -110,6 +114,17 @@ async function refreshDiskUpdate() {
   renderGlobal();
 }
 setInterval(refreshDiskUpdate, 10 * 60 * 1000);
+
+// Si el administrador cambia la planilla con el panel abierto, recargar la configuración (sin perder el formulario).
+setInterval(async () => {
+  if (state.busy || !state.spreadsheetId) return;
+  if ((await getSpreadsheetId()) !== state.spreadsheetId) {
+    const values = state.values;
+    await loadAll(true);
+    state.values = { ...state.values, ...values };
+    render();
+  }
+}, 5 * 60 * 1000);
 
 async function init() {
   const sync = await chrome.storage.sync.get('remembered');
@@ -253,6 +268,13 @@ async function submit() {
   state.busy = true;
   renderFooter();
   try {
+    // Nunca escribir en una planilla vieja: si el administrador la cambió, recargar y pedir confirmación.
+    if ((await getSpreadsheetId({ force: true })) !== state.spreadsheetId) {
+      const values = state.values;
+      await loadAll(true);
+      state.values = { ...state.values, ...values };
+      throw new Error('El administrador cambió la planilla de destino. Revise el destino y presione Añadir otra vez.');
+    }
     const res = await registrar(sheets, state.spreadsheetId, state.config, d.id, state.student, state.values);
     let gid = null;
     try { gid = await sheets.sheetGid(state.spreadsheetId, res.hoja); } catch { /* el enlace es opcional */ }
@@ -303,6 +325,13 @@ function renderGlobal() {
       h('button', { class: 'link', type: 'button', onclick: () => chrome.runtime.openOptionsPage() }, 'Abrir opciones')));
   }
   if (state.confirmError) out.push(note('err', state.confirmError));
+  if (state.spreadsheetSource === 'override') {
+    out.push(note('warn', 'Este equipo usa una planilla de PRUEBA, no la definida por el administrador. ',
+      h('button', { class: 'link', type: 'button', onclick: () => chrome.runtime.openOptionsPage() }, 'Cambiar en Opciones')));
+  }
+  if (state.spreadsheetChanged) {
+    out.push(note('info', `La planilla de destino cambió (${state.spreadsheetId.slice(0, 10)}…). Los registros se guardan en la nueva.`));
+  }
   if (state.diskUpdate) {
     // Ya está copiada en el equipo: solo falta recargar.
     out.push(note('info', `Versión ${state.diskUpdate} lista para usar. `,

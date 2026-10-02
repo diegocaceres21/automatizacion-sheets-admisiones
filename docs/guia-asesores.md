@@ -74,6 +74,12 @@ Para actualizar en el momento, vuelva a ejecutar la línea de instalación (paso
    powershell -ExecutionPolicy Bypass -File "%LOCALAPPDATA%AdmisionesUCBactualizar.ps1" -Desinstalar
    ```
 
+## Planilla de destino
+
+La planilla donde se registran los estudiantes la define el administrador para todos. No necesita configurarla. Puede ver cuál se está usando en **Opciones**: clic derecho en el ícono, luego **Opciones**.
+
+Si el panel muestra "Este equipo usa una planilla de PRUEBA", vaya a Opciones y presione **Volver a la del administrador**.
+
 ## Si la extensión no funciona
 
 El menú antiguo **Añadir estudiante** de la planilla sigue disponible como respaldo.

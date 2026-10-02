@@ -18,11 +18,11 @@
     const student = { idPreInscripcion: 'x', nombre: 'MAMANI QUISPE ANA LUCIA', ci: '9876543', celular: '71234567', colegio: 'DESPERTAR', departamentoColegio: 'COCHABAMBA',
       periodo: params.get('p') || '', carreraSIAAN: params.get('c') || '' };
     const session = {
-      configCache: { spreadsheetId: 'TEST', at: Date.now(), tabs },
+      configCache: { spreadsheetId: '1HARNESSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', at: Date.now(), tabs },
       pendingStudent: scenario === 'confirmado' || scenario === 'duplicado' ? { student, source: 'confirmacion', at: Date.now() } : null,
       siaanPreview: scenario === 'preview' ? { data: { ...student, ci: '1112223' } } : null
     };
-    const sync = { spreadsheetId: 'TEST', remembered: { destinoId: params.get('d') || 'NUEVOS', asesor: 'DIEGO CACERES' } };
+    const sync = { ...(params.get('o') ? { spreadsheetOverride: '1HARNESSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' } : {}), remembered: { destinoId: params.get('d') || 'NUEVOS', asesor: 'DIEGO CACERES' } };
     const area = (store) => ({
       get: async (keys) => Object.fromEntries([].concat(keys).map((k) => [k, store[k]])),
       set: async (o) => Object.assign(store, o),
@@ -30,9 +30,9 @@
       onChanged: { addListener() {} }
     });
     window.chrome = {
-      storage: { session: area(session), sync: area(sync), onChanged: { addListener() {} } },
+      storage: { session: area(session), sync: area(sync), local: area({}), onChanged: { addListener() {} } },
       action: { setBadgeText() {} },
-      runtime: { openOptionsPage: () => alert('opciones'), getManifest: () => ({ version: '0.1.0' }) },
+      runtime: { openOptionsPage: () => alert('opciones'), getManifest: () => ({ version: '0.1.0' }), getURL: (p) => new URL('./' + p, location.href).href },
       identity: { getAuthToken: async () => ({ token: 't' }), removeCachedAuthToken: async () => {}, getProfileUserInfo: async () => ({ email: 'asesor.prueba@ucb.edu.bo' }) },
       tabs: { query: async () => [] }
     };

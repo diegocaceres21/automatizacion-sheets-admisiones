@@ -1,7 +1,7 @@
 {
-  "version": "0.3.0",
-  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.3.0.zip",
-  "sha256": "a6a86b4a2340d8679f0de70ff911126b3deb39b8296607814acb0e7e616c8403",
-  "notas": "Instalador con actualizacion automatica; corrige Confirmar en pestanas abiertas y mensajes 'null'",
+  "version": "0.4.0",
+  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.4.0.zip",
+  "sha256": "911ced1aaa5ab956977e175ab8d700ba32b5fe9f0bee2b12f3fe099132884e91",
+  "notas": "La planilla de destino la define el administrador para todos",
   "fecha": "2026-10-02"
 }

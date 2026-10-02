@@ -9,21 +9,33 @@
   <main>
     <h1>Admisiones UCB</h1>
 
-    <form id="form">
-      <label for="spreadsheetId">ID de la planilla de Admisiones</label>
-      <input id="spreadsheetId" type="text" autocomplete="off" spellcheck="false"
-             placeholder="Ej. 1mmliqZtRkV09-hzNFYE4F0UdoWxfkwqiQoIvI0jOr2s">
-      <p class="hint">También puede pegar el enlace completo de la planilla.</p>
+    <section>
+      <h2>Planilla de destino</h2>
+      <p id="current" class="current">Cargando…</p>
+      <p class="hint">La define el administrador para todos los asesores. No necesita configurarla.</p>
       <div class="actions">
-        <button type="submit">Guardar</button>
-        <button type="button" id="test" class="secondary">Probar conexión</button>
+        <button type="button" id="test">Probar conexión</button>
       </div>
-    </form>
+    </section>
 
     <section id="result" hidden>
       <h2>Resultado</h2>
       <ul id="checks"></ul>
     </section>
+
+    <details id="overrideBox">
+      <summary>Usar otra planilla solo en este equipo (pruebas)</summary>
+      <form id="form">
+        <label for="override">ID o enlace de la planilla de prueba</label>
+        <input id="override" type="text" autocomplete="off" spellcheck="false"
+               placeholder="Ej. https://docs.google.com/spreadsheets/d/…/edit">
+        <p class="hint">Mientras esté activa, este equipo ignora la planilla definida por el administrador y el panel muestra un aviso.</p>
+        <div class="actions">
+          <button type="submit" class="secondary">Usar esta planilla</button>
+          <button type="button" id="clearOverride" class="secondary">Volver a la del administrador</button>
+        </div>
+      </form>
+    </details>
   </main>
   <script type="module" src="options.js"></script>
 </body>

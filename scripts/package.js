@@ -1,6 +1,8 @@
 // Empaqueta extension/ en dist/admisiones-ucb-<versión>.zip y genera dist/version.json para GitHub Pages.
 // Uso: node scripts/package.js --base https://<usuario>.github.io/<repo> --spreadsheet <ID> [--notas "Qué cambió"]
-// --spreadsheet agrega defaults.json al ZIP: el asesor no necesita pegar el ID de la planilla.
+// defaults.json (dentro del ZIP): { spreadsheetId: --spreadsheet (respaldo), planillaUrl: <base>/planilla.json }.
+// La planilla que usan todos se define en <out>/planilla.json (se crea con --spreadsheet si no existe;
+// después el administrador la edita ahí y la publica, sin generar una versión nueva).
 // --out <carpeta> (por defecto dist/). Para publicar: --out releases (GitHub Pages sirve el repo completo).
 // Sin dependencias: escribe el ZIP a mano (deflate de node:zlib).
 import fs from 'node:fs';
@@ -49,7 +51,10 @@ const entries = [];
 const chunks = [];
 let offset = 0;
 const contents = files.map((file) => [path.relative(src, file).split(path.sep).join('/'), fs.readFileSync(file)]);
-if (spreadsheetId) contents.push(['defaults.json', Buffer.from(JSON.stringify({ spreadsheetId }) + '\n')]);
+const defaults = {};
+if (spreadsheetId) defaults.spreadsheetId = spreadsheetId;
+if (base) defaults.planillaUrl = `${base}/planilla.json`;
+if (Object.keys(defaults).length) contents.push(['defaults.json', Buffer.from(JSON.stringify(defaults) + '\n')]);
 for (const [rel, data] of contents) {
   const name = Buffer.from('admisiones-ucb/' + rel);
   const comp = zlib.deflateRawSync(data, { level: 9 });
@@ -97,6 +102,14 @@ fs.writeFileSync(path.join(dist, zipName), zipBuf);
 const sha256 = crypto.createHash('sha256').update(zipBuf).digest('hex');
 const info = { version, url: base ? `${base}/${zipName}` : zipName, sha256, notas, fecha: new Date().toISOString().slice(0, 10) };
 fs.writeFileSync(path.join(dist, 'version.json'), JSON.stringify(info, null, 2) + '\n');
+
+const planillaFile = path.join(dist, 'planilla.json');
+if (spreadsheetId && !fs.existsSync(planillaFile)) {
+  fs.writeFileSync(planillaFile, JSON.stringify({ spreadsheetId }, null, 2) + '\n');
+  console.log(`${path.relative(root, planillaFile)} creado. Para cambiar la planilla de todos, edítelo y publíquelo.`);
+} else if (fs.existsSync(planillaFile)) {
+  console.log(`Planilla central (${path.relative(root, planillaFile)}):`, JSON.parse(fs.readFileSync(planillaFile, 'utf8')).spreadsheetId);
+}
 
 console.log(`${path.relative(root, dist)}/${zipName} (${contents.length} archivos)${spreadsheetId ? ', con defaults.json' : ''}`);
 if (!spreadsheetId) console.log('Aviso: sin --spreadsheet, cada asesor debe pegar el ID de la planilla en Opciones.');

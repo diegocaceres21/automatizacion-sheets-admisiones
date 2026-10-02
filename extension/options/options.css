@@ -38,3 +38,10 @@ li::before { font-weight: 700; margin-right: 6px; }
 li.ok::before { content: "✓"; color: var(--ok); }
 li.warn::before { content: "!"; color: var(--warn); }
 li.err::before { content: "✗"; color: var(--err); }
+section { margin-bottom: 20px; }
+.current { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; word-break: break-all; margin: 0; }
+.current.warn { border-color: var(--warn); color: var(--warn); }
+.current.err { border-color: var(--err); color: var(--err); }
+.current a { color: inherit; font-weight: 600; }
+details { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 12px; }
+summary { cursor: pointer; font-weight: 600; margin-bottom: 12px; }

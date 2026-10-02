@@ -16,6 +16,27 @@ Installs made from the zip by hand still get the panel's "Nueva versión … Des
 - The advisor guide is also published: https://diegocaceres21.github.io/automatizacion-sheets-admisiones/docs/guia-asesores.html
 - Everything in the repo is public. `.gitignore` keeps the private key, the OAuth client file, saved SIAAN pages and `dist/` out of it. Push with git; do not use the GitHub website's file upload, which ignores `.gitignore`.
 
+## Change the destination spreadsheet for everyone
+
+The spreadsheet that every advisor writes to is defined in **`releases/planilla.json`**:
+
+```json
+{ "spreadsheetId": "1mmliqZtRkV09-hzNFYE4F0UdoWxfkwqiQoIvI0jOr2s" }
+```
+
+To switch all advisors, for example from the test copy to production or to a new term's spreadsheet:
+
+1. Prepare the new spreadsheet: run `seedConfig()` and then `verificarConfig()` in its Apps Script, and give the advisors edit access.
+2. Edit `releases/planilla.json` with the new ID. GitHub's web editor works for this one file. Commit and push.
+3. No new version and no action from advisors is needed:
+   - Each extension reads the file every 10 minutes. GitHub Pages can add up to 10 more minutes of caching, so allow about 20 minutes.
+   - Right before every "Añadir", the panel checks the file again. If the spreadsheet changed, it reloads the configuration and asks the advisor to press Añadir again, so nothing is written to the old one.
+   - If the file can't be reached, each extension keeps the last spreadsheet it read.
+
+In Opciones, each advisor sees which spreadsheet is in use and where it comes from. "Usar otra planilla solo en este equipo (pruebas)" overrides it on one machine only, and the panel then shows a permanent "planilla de PRUEBA" warning.
+
+Releases built with `--spreadsheet` carry that ID in `defaults.json`, only as a fallback for the first run without internet. `package.js` creates `releases/planilla.json` from it only if the file doesn't exist; later builds never overwrite it.
+
 ## Each release
 
 1. Bump `version` in `extension/manifest.json` (for example `0.1.0` to `0.2.0`).
