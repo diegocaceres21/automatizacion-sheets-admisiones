@@ -35,3 +35,33 @@ export async function checkForUpdate(versionUrl, currentVersion, fetchImpl = fet
   }
   return info?.version && compareVersions(info.version, currentVersion) > 0 ? info : null;
 }
+
+// ---- Instalación con install/instalar.ps1 ----
+// El instalador reemplaza los archivos de la carpeta de la extensión. Chrome sigue ejecutando la versión
+// anterior hasta recargarla; leer manifest.json desde el disco permite detectar la versión nueva.
+
+/** Versión de los archivos en disco (puede ser más nueva que la que está corriendo), o null. */
+export async function diskVersion() {
+  try {
+    const res = await fetch(chrome.runtime.getURL('manifest.json'), { cache: 'no-store' });
+    return (await res.json()).version || null;
+  } catch {
+    return null;
+  }
+}
+
+/** true si la extensión fue instalada con el instalador (se actualiza sola). */
+export async function installerManaged() {
+  try {
+    const res = await fetch(chrome.runtime.getURL('instalador.json'), { cache: 'no-store' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Versión nueva ya copiada en disco y pendiente de recargar, o null. */
+export async function pendingDiskVersion() {
+  const disk = await diskVersion();
+  return disk && compareVersions(disk, chrome.runtime.getManifest().version) > 0 ? disk : null;
+}

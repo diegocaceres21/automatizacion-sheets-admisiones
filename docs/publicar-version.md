@@ -1,6 +1,13 @@
 # Releasing a new version (admin)
 
-Advisors install the extension unpacked (no Web Store, no Workspace admin). Chrome does not update it automatically. Instead, the panel compares its version with `version.json` on GitHub Pages and shows a download notice.
+Advisors install the extension unpacked (no Web Store, no Workspace admin) with `install/instalar.ps1`. They run one line in Windows+R; the script:
+
+- installs the latest release into `%LOCALAPPDATA%AdmisionesUCBextension`, after checking its SHA-256 against `version.json`;
+- creates a per-user scheduled task, "Admisiones UCB - Actualizar". It runs at logon and at 08:30 and 13:30, and installs any newer release.
+
+The extension notices that the files on disk are newer and reloads itself (every 30 minutes, only while the side panel is closed). The panel also offers "Aplicar ahora".
+
+Installs made from the zip by hand still get the panel's "Nueva versión … Descargar" notice instead.
 
 ## Setup (done)
 
@@ -26,7 +33,21 @@ Advisors install the extension unpacked (no Web Store, no Workspace admin). Chro
 
    Use the test copy ID during the parallel run, and the production ID for the real rollout.
 4. Commit and push `releases/` (the new zip and `version.json`). Keep old zips so old links keep working.
-5. Within 6 hours, advisors see "Nueva versión … disponible" in the panel. They follow "Actualizar" in [guia-asesores.md](guia-asesores.md).
+5. Advisors who used the installer get the update at their next logon, or at 08:30/13:30. Advisors who installed by hand see "Nueva versión … disponible" within 6 hours.
+
+The scheduled task runs a local copy of the installer (`%LOCALAPPDATA%AdmisionesUCBactualizar.ps1`). If you change `install/instalar.ps1` itself, advisors get the new script only when they run the install line again. Release updates are not affected.
+
+### Testing the installer locally
+
+```bash
+node tests/ui/serve.js
+```
+
+Then, in another terminal (installs into a test folder, without the scheduled task or Chrome):
+
+```bash
+powershell -ExecutionPolicy Bypass -File install/instalar.ps1 -Silencioso -SinTarea -BaseUrl http://127.0.0.1:5178/releases -Carpeta "%TEMP%admisiones-prueba"
+```
 
 ## Old Apps Script menu (fallback)
 

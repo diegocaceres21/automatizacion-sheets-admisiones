@@ -8,15 +8,40 @@ import { getSession, getStudent, findConfirmed } from './lib/siaan.js';
 import { getSpreadsheetId } from './lib/configStore.js';
 import { periodoCode } from './lib/siaanMatch.js';
 import { reportError } from './lib/errors.js';
+import { pendingDiskVersion } from './lib/updates.js';
 
 const DEFAULTS = { siaanIdRegional: 'PJh5GJydX69ABmU3tKVdpQ==', siaanIdEstadoConfirmado: 'ooo40MW8KdnMovKywZ6qzQ==' };
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  scheduleVersionCheck();
   await injectIntoOpenTabs();
   // Sin ID de planilla (instalación de desarrollo sin defaults.json): abrir Opciones para configurarlo.
   if (reason === 'install' && !(await getSpreadsheetId())) chrome.runtime.openOptionsPage();
 });
+
+chrome.runtime.onStartup.addListener(() => {
+  scheduleVersionCheck();
+  reloadIfUpdated();
+});
+
+// ---- Actualización automática (instalación con install/instalar.ps1) ----
+// La tarea programada copia la versión nueva en la carpeta; aquí se recarga la extensión para usarla.
+function scheduleVersionCheck() {
+  chrome.alarms.create('revisar-version', { delayInMinutes: 1, periodInMinutes: 30 });
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'revisar-version') reloadIfUpdated();
+});
+
+async function reloadIfUpdated() {
+  if (!(await pendingDiskVersion())) return;
+  // Con el panel abierto no se recarga (perdería un formulario a medio llenar): el panel ofrece "Aplicar ahora".
+  const panels = await chrome.runtime.getContexts({ contextTypes: ['SIDE_PANEL'] }).catch(() => []);
+  if (panels.length) return;
+  chrome.runtime.reload();
+}
 
 /**
  * Chrome no inyecta los content scripts en pestañas que ya estaban abiertas al instalar o actualizar

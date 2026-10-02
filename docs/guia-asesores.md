@@ -9,13 +9,23 @@ Extensión de Chrome para registrar estudiantes en las planillas de Admisiones d
 
 ## Instalar (una sola vez)
 
-1. Descargue el archivo `admisiones-ucb-X.Y.Z.zip` que le envió el administrador.
-2. Descomprímalo en una carpeta fija, por ejemplo `Documentos\admisiones-ucb`. **No borre ni mueva esa carpeta**: Chrome la usa mientras la extensión está instalada.
-3. En Chrome, abra `chrome://extensions`.
-4. Active **Modo de desarrollador** (arriba a la derecha).
-5. Haga clic en **Cargar extensión sin empaquetar** y elija la carpeta `admisiones-ucb`.
-6. Haga clic en el ícono de pieza de rompecabezas de la barra de Chrome. Luego haga clic en el alfiler junto a **Admisiones UCB** para dejar el ícono visible.
-7. Haga clic en el ícono de Admisiones UCB. La primera vez, Google pide permiso para usar sus planillas. Elija su cuenta @ucb.edu.bo y acepte.
+1. Presione **Windows + R** (se abre la ventana "Ejecutar").
+2. Copie y pegue esta línea completa, y presione **Enter**:
+
+   ```
+   powershell -ExecutionPolicy Bypass -Command "irm https://diegocaceres21.github.io/automatizacion-sheets-admisiones/install/instalar.ps1 | iex"
+   ```
+
+3. Se abre una ventana azul que descarga e instala la extensión. Al terminar, abre Chrome en `chrome://extensions`.
+4. En esa pestaña de Chrome:
+   1. Active **Modo de desarrollador** (arriba a la derecha).
+   2. Haga clic en **Cargar extensión sin empaquetar**.
+   3. En la ventana que aparece, pegue la carpeta con **Ctrl+V**. El instalador ya la copió. Luego presione **Seleccionar carpeta**.
+5. Haga clic en el ícono de pieza de rompecabezas de la barra de Chrome. Luego haga clic en el alfiler junto a **Admisiones UCB** para dejar el ícono visible.
+6. Haga clic en el ícono de Admisiones UCB. La primera vez, Google pide permiso para usar sus planillas. Elija su cuenta @ucb.edu.bo y acepte.
+7. Si tenía SIAAN abierto, recargue esa pestaña (F5).
+
+La extensión queda en `%LOCALAPPDATA%AdmisionesUCBextension`. **No mueva ni borre esa carpeta.**
 
 ## Registrar a un estudiante
 
@@ -51,13 +61,18 @@ Use esta opción si el estudiante ya fue confirmado antes. Debe tener SIAAN abie
 
 ## Actualizar
 
-Cuando haya una versión nueva, el panel muestra **Nueva versión X disponible · Descargar**.
+No tiene que hacer nada. El instalador dejó una tarea de Windows que busca versiones nuevas al iniciar sesión y a las 08:30 y 13:30. La extensión se recarga sola cuando el panel está cerrado. Si el panel está abierto, muestra **Versión X lista para usar · Aplicar ahora**.
 
-1. Descargue el ZIP nuevo.
-2. Descomprímalo **en la misma carpeta**, reemplazando los archivos.
-3. En `chrome://extensions`, presione **↻ (Recargar)** en Admisiones UCB.
+Para actualizar en el momento, vuelva a ejecutar la línea de instalación (paso 2). Si la extensión ya estaba cargada, no hace falta repetir el paso 4.
 
-Su configuración (asesor, último destino) se conserva.
+## Desinstalar
+
+1. En `chrome://extensions`, presione **Quitar** en Admisiones UCB.
+2. En **Windows + R**, ejecute:
+
+   ```
+   powershell -ExecutionPolicy Bypass -File "%LOCALAPPDATA%AdmisionesUCBactualizar.ps1" -Desinstalar
+   ```
 
 ## Si la extensión no funciona
 

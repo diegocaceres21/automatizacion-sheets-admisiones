@@ -6,7 +6,7 @@ import { headerWarnings, precheck, registrar } from '../lib/registrar.js';
 import { SheetsClient, chromeAuth } from '../lib/sheets.js';
 import { studentsByCI } from '../lib/siaan.js';
 import { carreraFromSIAAN, destinoForPeriodo, periodoCode } from '../lib/siaanMatch.js';
-import { checkForUpdate } from '../lib/updates.js';
+import { checkForUpdate, installerManaged, pendingDiskVersion } from '../lib/updates.js';
 import { reportError } from '../lib/errors.js';
 
 const sheets = new SheetsClient(chromeAuth);
@@ -30,7 +30,9 @@ const state = {
   values: {},
   busy: false,
   result: null,
-  update: null          // { version, url, notas } si hay una versión nueva
+  update: null,         // { version, url, notas } si hay una versión nueva publicada
+  managed: false,       // instalada con el instalador: se actualiza sola
+  diskUpdate: null      // versión nueva ya copiada en disco, pendiente de recargar
 };
 
 // ---------- utilidades de DOM ----------
@@ -93,6 +95,7 @@ async function loadAll(force = false) {
       state.update = info;
       renderGlobal();
     });
+    refreshDiskUpdate();
   } catch (e) {
     state.config = null;
     state.loadError = reportError('Cargar configuración', e, 'No se pudo leer la configuración de la planilla.');
@@ -100,6 +103,13 @@ async function loadAll(force = false) {
   render();
   runCheck();
 }
+
+async function refreshDiskUpdate() {
+  state.managed = await installerManaged();
+  state.diskUpdate = await pendingDiskVersion();
+  renderGlobal();
+}
+setInterval(refreshDiskUpdate, 10 * 60 * 1000);
 
 async function init() {
   const sync = await chrome.storage.sync.get('remembered');
@@ -293,7 +303,14 @@ function renderGlobal() {
       h('button', { class: 'link', type: 'button', onclick: () => chrome.runtime.openOptionsPage() }, 'Abrir opciones')));
   }
   if (state.confirmError) out.push(note('err', state.confirmError));
-  if (state.update) {
+  if (state.diskUpdate) {
+    // Ya está copiada en el equipo: solo falta recargar.
+    out.push(note('info', `Versión ${state.diskUpdate} lista para usar. `,
+      h('button', { class: 'link', type: 'button', disabled: state.busy, onclick: () => chrome.runtime.reload() }, 'Aplicar ahora'),
+      ' (se aplica sola al cerrar el panel).'));
+  } else if (state.update && state.managed) {
+    out.push(note('info', `Nueva versión ${state.update.version} publicada${state.update.notas ? `: ${state.update.notas}` : ''}. Se instalará sola al iniciar sesión o a las 08:30/13:30.`));
+  } else if (state.update) {
     out.push(note('info', `Nueva versión ${state.update.version} disponible${state.update.notas ? `: ${state.update.notas}` : '.'} `,
       h('a', { href: state.update.url, target: '_blank' }, 'Descargar')));
   }

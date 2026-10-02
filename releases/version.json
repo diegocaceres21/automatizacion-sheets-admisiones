@@ -1,6 +1,7 @@
 {
-  "version": "0.2.1",
-  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.2.1.zip",
-  "notas": "Corrige: Confirmar en pestañas de SIAAN abiertas antes de instalar, y mensajes de error 'null'",
-  "fecha": "2026-10-01"
+  "version": "0.3.0",
+  "url": "https://diegocaceres21.github.io/automatizacion-sheets-admisiones/releases/admisiones-ucb-0.3.0.zip",
+  "sha256": "a6a86b4a2340d8679f0de70ff911126b3deb39b8296607814acb0e7e616c8403",
+  "notas": "Instalador con actualizacion automatica; corrige Confirmar en pestanas abiertas y mensajes 'null'",
+  "fecha": "2026-10-02"
 }

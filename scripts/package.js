@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,9 +90,12 @@ end.writeUInt32LE(centralBuf.length, 12);
 end.writeUInt32LE(offset, 16);
 
 fs.mkdirSync(dist, { recursive: true });
-fs.writeFileSync(path.join(dist, zipName), Buffer.concat([...chunks, centralBuf, end]));
+const zipBuf = Buffer.concat([...chunks, centralBuf, end]);
+fs.writeFileSync(path.join(dist, zipName), zipBuf);
 
-const info = { version, url: base ? `${base}/${zipName}` : zipName, notas, fecha: new Date().toISOString().slice(0, 10) };
+// sha256: el instalador (install/instalar.ps1) verifica el ZIP descargado antes de instalarlo.
+const sha256 = crypto.createHash('sha256').update(zipBuf).digest('hex');
+const info = { version, url: base ? `${base}/${zipName}` : zipName, sha256, notas, fecha: new Date().toISOString().slice(0, 10) };
 fs.writeFileSync(path.join(dist, 'version.json'), JSON.stringify(info, null, 2) + '\n');
 
 console.log(`${path.relative(root, dist)}/${zipName} (${contents.length} archivos)${spreadsheetId ? ', con defaults.json' : ''}`);
